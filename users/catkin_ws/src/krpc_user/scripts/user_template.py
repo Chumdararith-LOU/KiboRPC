@@ -28,10 +28,11 @@ from ib2_msgs.msg import CtlCommandAction, CtlCommandGoal, CtlCommandResult, Ctl
 from ib2_msgs.msg import Navigation  # noqa: E402
 
 import geometry as g  # noqa: E402
+import judge_link  # noqa: E402
 import planner  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.3 2026-11-21"
+VERSION = "v1.4 2026-11-21"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -55,6 +56,8 @@ WAIT_ACTION_S = 10.0
 CANCEL_WAIT_S = 10.0
 NAV_STALE_S = 1.0
 LOOP_HZ = 20.0
+JUDGE_WAIT_S = 45.0         # E6: never announce Mission Start before the judge listens
+NO_JUDGE_WAIT_S = 5.0       # if no judge is visible at all, do not stall the run
 
 MODEL = planner.MotionModel(accel=0.010, v_max=0.20, ang_accel=0.18, w_max=0.4363,
                             settle=3.0)
@@ -329,26 +332,57 @@ class UserTemplate:
     # Mission flow
     # ------------------------------------------------------------------
     def __run_user_flow(self, msg):
-        res = self.__call_service('/event/mission_start', self.__mission_start)
+        # The mission clock starts at the start signal, so any waiting below is
+        # paid from our own 5-minute budget (the safe assumption).
         self.__t0 = rospy.get_time()
-        if res is None:
-            rospy.logerr('mission_start failed; continuing anyway')
+        started = False
         try:
+            # v1.4: get everything ready BEFORE announcing Mission Start (E6).
             if not self.__command.wait_for_server(rospy.Duration(WAIT_ACTION_S)):
                 rospy.logerr('/ctl/command server not available')
-                return
+            if not self.__checkpoint_client.wait_for_server(rospy.Duration(WAIT_ACTION_S)):
+                rospy.logwarn('/event/checkpoint_passed server not available yet')
             course = self.__load_course()
-            if course is None:
+            self.__wait_for_judge()
+            plan = self.__plan(course) if course is not None else None
+            res = self.__call_service('/event/mission_start', self.__mission_start)
+            started = True
+            if res is None:
+                rospy.logerr('mission_start failed; continuing anyway')
+            if plan is None:
                 return
-            stops, goal = course
-            self.__fly_course(stops, goal)
+            self.__fly_course(*plan)
         except MissionAbort as exc:
             rospy.logwarn('[%6.1f s] mission aborted: %s', self.__elapsed(), exc)
         except Exception as exc:
             rospy.logerr('user flow failed: %s', exc)
         finally:
             self.__cancel_move()
+            if not started:
+                self.__call_service('/event/mission_start', self.__mission_start)
             self.__finish()
+
+    def __wait_for_judge(self):
+        """Wait (bounded) until the judge is connected to /gs/data."""
+        t0 = rospy.get_time()
+        detail = ''
+        rate = rospy.Rate(5.0)
+        while True:
+            self.__check_abort()
+            try:
+                ready, judge_seen, detail = judge_link.judge_listening(rospy.get_name())
+            except Exception as exc:  # introspection unavailable: do not block forever
+                ready, judge_seen, detail = False, False, 'check failed: %s' % exc
+            if ready:
+                rospy.loginfo('[%6.1f s] %s', self.__elapsed(), detail)
+                return True
+            limit = JUDGE_WAIT_S if judge_seen else NO_JUDGE_WAIT_S
+            if rospy.get_time() - t0 >= limit:
+                break
+            rate.sleep()
+        rospy.logwarn('[%6.1f s] judge link not confirmed (%s); starting anyway',
+                      self.__elapsed(), detail)
+        return False
 
     def __load_course(self):
         res = self.__call_service('/mission/get_checkpoints', self.__checkpoints)
@@ -367,7 +401,8 @@ class UserTemplate:
         rospy.loginfo('course: %d checkpoints + goal %d', len(stops), goal_id)
         return stops, goal[0]
 
-    def __fly_course(self, stops, goal):
+    def __plan(self, course):
+        stops, goal = course
         nav = self.__wait_for_nav()
         start = (nav[0], nav[1])
         # v1.2: plan the best subset that fits the budget, using the same rule as "go home".
@@ -378,6 +413,9 @@ class UserTemplate:
         skipped = [s.id for s in stops if s.id not in order]
         rospy.loginfo('[%6.1f s] route %s, estimated finish %.0f s, planned skips %s',
                       self.__elapsed(), order, est, skipped)
+        return stops, goal, order
+
+    def __fly_course(self, stops, goal, order):
         by_id = dict((s.id, s) for s in stops)
         levels = {}
         for cp_id in order[:-1]:
