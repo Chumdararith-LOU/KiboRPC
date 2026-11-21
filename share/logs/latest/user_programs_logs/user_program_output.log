@@ -1,0 +1,30 @@
+[rosout][INFO] 2026-11-21 09:39:10,509: start id: 0
+[rosout][INFO] 2026-11-21 09:39:15,534: mission_start result: success=True message=accepted
+[rosout][INFO] 2026-11-21 09:39:15,536: --- Fetching Checkpoints from Server ---
+[rosout][INFO] 2026-11-21 09:39:15,544: Found 8 checkpoints. Goal ID is 12.
+[rosout][INFO] 2026-11-21 09:39:15,546: === Navigating to Checkpoint 2 ===
+[rosout][WARN] 2026-11-21 09:40:13,076: Timeout moving to CP 2. Cancelling...
+[rosout][INFO] 2026-11-21 09:40:13,083: === Navigating to Checkpoint 3 ===
+[rosout][INFO] 2026-11-21 09:40:58,436: Arrived at CP 3. Notifying server...
+[rosout][INFO] 2026-11-21 09:40:58,446: notify checkpoint_id=3 passed
+[rosout][INFO] 2026-11-21 09:40:58,498: checkpoint_passed result: success: True
+message: "accepted"
+[rosout][INFO] 2026-11-21 09:40:58,505: === Navigating to Checkpoint 4 ===
+[rosout][INFO] 2026-11-21 09:41:47,020: Arrived at CP 4. Notifying server...
+[rosout][INFO] 2026-11-21 09:41:47,044: notify checkpoint_id=4 passed
+[rosout][INFO] 2026-11-21 09:41:47,056: checkpoint_passed result: success: True
+message: "accepted"
+[rosout][INFO] 2026-11-21 09:41:47,057: === Navigating to Checkpoint 5 ===
+[rosout][WARN] 2026-11-21 09:42:44,858: Timeout moving to CP 5. Cancelling...
+[rosout][INFO] 2026-11-21 09:42:44,864: === Navigating to Checkpoint 6 ===
+[rosout][WARN] 2026-11-21 09:43:47,894: Timeout moving to CP 6. Cancelling...
+[rosout][INFO] 2026-11-21 09:43:47,909: === Navigating to Checkpoint 7 ===
+[rosout][WARN] 2026-11-21 09:44:46,046: Timeout moving to CP 7. Cancelling...
+[rosout][INFO] 2026-11-21 09:44:46,053: === Navigating to Checkpoint 10 ===
+[rosout][WARN] 2026-11-21 09:45:46,781: Timeout moving to CP 10. Cancelling...
+[rosout][INFO] 2026-11-21 09:45:46,793: === Navigating to Checkpoint 12 ===
+[rosout][ERROR] 2026-11-21 09:46:24,562: Movement to CP 12 failed with code 3
+[rosout][INFO] 2026-11-21 09:46:24,583: mission_finished result: success=True message=accepted
+[rosout][INFO] 2026-11-21 09:46:32,181: finish processing
+shutdown request: user request
+[krpc_user-2] process has finished cleanly

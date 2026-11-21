@@ -1,0 +1,73 @@
+... logging to /tmp/share/logs/latest/user_programs_logs/ros/369c993a-e58f-11f1-b993-668ea74f3da6/roslaunch-33061e14909a-799.log
+Checking log directory for disk usage. This may take a while.
+Press Ctrl-C to interrupt
+Done checking log file disk usage. Usage is <1GB.
+]2;/users/catkin_ws/src/krpc_user/launch/krpc_user.launch
+[1mstarted roslaunch server http://krpc-user:45717/[0m
+
+SUMMARY
+========
+
+PARAMETERS
+ * /krpc_api_node/checkpoint_source_path: /tmp/share/logs/l...
+ * /platform_launch/camera_left: False
+ * /platform_launch/camera_right: False
+ * /platform_launch/ctl_only: True
+ * /platform_launch/fsm: True
+ * /platform_launch/sensor_fusion: True
+ * /platform_launch/slam_wrapper: True
+ * /rosdistro: melodic
+ * /rosversion: 1.14.13
+
+NODES
+  /
+    krpc_api_node (krpc_api_server/krpc_api_node.py)
+    krpc_user (krpc_user/user_template.py)
+
+[1mROS_MASTER_URI=http://krpc:11311[0m
+]2;/users/catkin_ws/src/krpc_user/launch/krpc_user.launch http://krpc:11311
+[1mprocess[krpc_api_node-1]: started with pid [809][0m
+[1mprocess[krpc_user-2]: started with pid [810][0m
+[INFO] [/krpc_api_node] [1795253949.458954, 0.000000]: checkpoint source path (parameter): /tmp/share/logs/latest/cheat_sheet.json
+[INFO] [/krpc_api_node] [1795253949.496887, 8.045000]: KrpcApiNode initialized (sim mode)
+[INFO] [/krpc_api_node] [1795253949.497977, 8.045000]: KrpcApiNode started
+[INFO] [/krpc_user] [1795253950.509577, 8.671000]: start id: 0
+[INFO] [/krpc_api_node] [1795253955.516441, 11.744000]: mission_start
+[INFO] [/krpc_api_node] [1795253955.530459, 11.752000]: /gs/data: {"status": "Mission Start"}
+[INFO] [/krpc_user] [1795253955.534226, 11.754000]: mission_start result: success=True message=accepted
+[INFO] [/krpc_user] [1795253955.536500, 11.755000]: --- Fetching Checkpoints from Server ---
+[INFO] [/krpc_api_node] [1795253955.542507, 11.758000]: get_checkpoints
+[INFO] [/krpc_user] [1795253955.544964, 11.760000]: Found 8 checkpoints. Goal ID is 12.
+[INFO] [/krpc_user] [1795253955.546082, 11.761000]: === Navigating to Checkpoint 2 ===
+[WARN] [/krpc_user] [1795254013.076658, 41.761000]: Timeout moving to CP 2. Cancelling...
+[INFO] [/krpc_user] [1795254013.083091, 41.766000]: === Navigating to Checkpoint 3 ===
+[INFO] [/krpc_user] [1795254058.436552, 65.232000]: Arrived at CP 3. Notifying server...
+[INFO] [/krpc_user] [1795254058.446337, 65.236000]: notify checkpoint_id=3 passed
+[INFO] [/krpc_api_node] [1795254058.452537, 65.239000]: checkpoint_passed start: 3
+[INFO] [/krpc_api_node] [1795254058.465503, 65.244000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 3}
+[INFO] [/krpc_user] [1795254058.498983, 65.262000]: checkpoint_passed result: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795254058.505554, 65.265000]: === Navigating to Checkpoint 4 ===
+[INFO] [/krpc_user] [1795254107.020672, 90.191000]: Arrived at CP 4. Notifying server...
+[INFO] [/krpc_user] [1795254107.044995, 90.203000]: notify checkpoint_id=4 passed
+[INFO] [/krpc_api_node] [1795254107.047384, 90.203000]: checkpoint_passed start: 4
+[INFO] [/krpc_api_node] [1795254107.051404, 90.203000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 4}
+[INFO] [/krpc_user] [1795254107.056835, 90.207000]: checkpoint_passed result: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795254107.057980, 90.208000]: === Navigating to Checkpoint 5 ===
+[WARN] [/krpc_user] [1795254164.858846, 120.209000]: Timeout moving to CP 5. Cancelling...
+[INFO] [/krpc_user] [1795254164.864364, 120.212000]: === Navigating to Checkpoint 6 ===
+[WARN] [/krpc_user] [1795254227.894101, 150.215000]: Timeout moving to CP 6. Cancelling...
+[INFO] [/krpc_user] [1795254227.909419, 150.224000]: === Navigating to Checkpoint 7 ===
+[WARN] [/krpc_user] [1795254286.046095, 180.226000]: Timeout moving to CP 7. Cancelling...
+[INFO] [/krpc_user] [1795254286.053936, 180.232000]: === Navigating to Checkpoint 10 ===
+[WARN] [/krpc_user] [1795254346.781800, 210.232000]: Timeout moving to CP 10. Cancelling...
+[INFO] [/krpc_user] [1795254346.793358, 210.239000]: === Navigating to Checkpoint 12 ===
+[ERROR] [/krpc_user] [1795254384.562678, 228.220000]: Movement to CP 12 failed with code 3
+[INFO] [/krpc_api_node] [1795254384.575999, 228.228000]: mission_finished
+[INFO] [/krpc_api_node] [1795254384.580499, 228.231000]: /gs/data: {"status": "Mission Finish"}
+[INFO] [/krpc_user] [1795254384.583477, 228.231000]: mission_finished result: success=True message=accepted
+[INFO] [/krpc_user] [1795254392.181488, 231.637000]: finish processing
+shutdown request: user request
+[1m[krpc_user-2] process has finished cleanly
+log file: /tmp/share/logs/latest/user_programs_logs/ros/369c993a-e58f-11f1-b993-668ea74f3da6/krpc_user-2*.log[0m

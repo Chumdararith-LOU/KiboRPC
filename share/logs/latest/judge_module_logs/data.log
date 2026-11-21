@@ -1,0 +1,4 @@
+{'status': 'Mission Start'}
+{'status': 'CheckPointPassed', 'checkpoint_id': 3}
+{'status': 'CheckPointPassed', 'checkpoint_id': 4}
+{'status': 'Mission Finish'}
