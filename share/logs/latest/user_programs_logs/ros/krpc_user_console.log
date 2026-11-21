@@ -1,9 +1,9 @@
-... logging to /tmp/share/logs/latest/user_programs_logs/ros/369c993a-e58f-11f1-b993-668ea74f3da6/roslaunch-33061e14909a-799.log
+... logging to /tmp/share/logs/latest/user_programs_logs/ros/fce07aa4-e5b1-11f1-b51f-5a0759cfe8e2/roslaunch-86f1d2195e4f-852.log
 Checking log directory for disk usage. This may take a while.
 Press Ctrl-C to interrupt
 Done checking log file disk usage. Usage is <1GB.
 ]2;/users/catkin_ws/src/krpc_user/launch/krpc_user.launch
-[1mstarted roslaunch server http://krpc-user:45717/[0m
+[1mstarted roslaunch server http://krpc-user:33031/[0m
 
 SUMMARY
 ========
@@ -26,48 +26,82 @@ NODES
 
 [1mROS_MASTER_URI=http://krpc:11311[0m
 ]2;/users/catkin_ws/src/krpc_user/launch/krpc_user.launch http://krpc:11311
-[1mprocess[krpc_api_node-1]: started with pid [809][0m
-[1mprocess[krpc_user-2]: started with pid [810][0m
-[INFO] [/krpc_api_node] [1795253949.458954, 0.000000]: checkpoint source path (parameter): /tmp/share/logs/latest/cheat_sheet.json
-[INFO] [/krpc_api_node] [1795253949.496887, 8.045000]: KrpcApiNode initialized (sim mode)
-[INFO] [/krpc_api_node] [1795253949.497977, 8.045000]: KrpcApiNode started
-[INFO] [/krpc_user] [1795253950.509577, 8.671000]: start id: 0
-[INFO] [/krpc_api_node] [1795253955.516441, 11.744000]: mission_start
-[INFO] [/krpc_api_node] [1795253955.530459, 11.752000]: /gs/data: {"status": "Mission Start"}
-[INFO] [/krpc_user] [1795253955.534226, 11.754000]: mission_start result: success=True message=accepted
-[INFO] [/krpc_user] [1795253955.536500, 11.755000]: --- Fetching Checkpoints from Server ---
-[INFO] [/krpc_api_node] [1795253955.542507, 11.758000]: get_checkpoints
-[INFO] [/krpc_user] [1795253955.544964, 11.760000]: Found 8 checkpoints. Goal ID is 12.
-[INFO] [/krpc_user] [1795253955.546082, 11.761000]: === Navigating to Checkpoint 2 ===
-[WARN] [/krpc_user] [1795254013.076658, 41.761000]: Timeout moving to CP 2. Cancelling...
-[INFO] [/krpc_user] [1795254013.083091, 41.766000]: === Navigating to Checkpoint 3 ===
-[INFO] [/krpc_user] [1795254058.436552, 65.232000]: Arrived at CP 3. Notifying server...
-[INFO] [/krpc_user] [1795254058.446337, 65.236000]: notify checkpoint_id=3 passed
-[INFO] [/krpc_api_node] [1795254058.452537, 65.239000]: checkpoint_passed start: 3
-[INFO] [/krpc_api_node] [1795254058.465503, 65.244000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 3}
-[INFO] [/krpc_user] [1795254058.498983, 65.262000]: checkpoint_passed result: success: True
+[1mprocess[krpc_api_node-1]: started with pid [862][0m
+[1mprocess[krpc_user-2]: started with pid [863][0m
+[INFO] [/krpc_api_node] [1795268875.465381, 0.000000]: checkpoint source path (parameter): /tmp/share/logs/latest/cheat_sheet.json
+[INFO] [/krpc_api_node] [1795268875.480156, 0.000000]: KrpcApiNode initialized (sim mode)
+[INFO] [/krpc_api_node] [1795268875.481291, 0.000000]: KrpcApiNode started
+[INFO] [/krpc_user] [1795268875.657589, 0.000000]: krpc_user v1.0 2026-11-21 ready
+[INFO] [/krpc_user] [1795268876.571334, 0.000000]: start id: 0
+[INFO] [/krpc_api_node] [1795268881.606221, 9.068000]: mission_start
+[INFO] [/krpc_api_node] [1795268881.607803, 9.069000]: /gs/data: {"status": "Mission Start"}
+[INFO] [/krpc_user] [1795268881.610528, 9.070000]: /event/mission_start -> success=True message=accepted
+[INFO] [/krpc_api_node] [1795268881.615953, 9.075000]: get_checkpoints
+[INFO] [/krpc_user] [1795268881.617935, 9.076000]: /mission/get_checkpoints -> success=True message={"checkpoint_count": 8, "checkpoints": [{"checkpoint_id": 1, "position": [1.5705140309190921, -0.5183022886651412, 0.628452939818628], "marker_pose": {"position": [1.451, -1.001, 0.6806], "quaternion"...
+[INFO] [/krpc_user] [1795268881.619514, 9.077000]: course: 7 checkpoints + goal 12
+[INFO] [/krpc_user] [1795268881.621396, 9.078000]: [   0.0 s] route [9, 6, 1, 2, 3, 8, 5, 12], estimated 256 s
+[INFO] [/krpc_user] [1795268881.622649, 9.080000]: [   0.0 s] -> checkpoint 9: est 31.4 s, timeout 57.0 s
+[INFO] [/krpc_user] [1795268940.591951, 41.630000]: [  32.6 s] move result 0 after 32.6 s
+[INFO] [/krpc_user] [1795268942.501944, 42.630000]: [  33.6 s] cp 9 Lv3 held: level 3 | dist 0.014 m | centering 0.7 deg | roll 1.4 deg
+[INFO] [/krpc_api_node] [1795268942.506346, 42.632000]: checkpoint_passed start: 9
+[INFO] [/krpc_api_node] [1795268942.509380, 42.634000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 9}
+[INFO] [/krpc_user] [1795268942.512817, 42.636000]: [  33.6 s] reported cp 9: success: True
 message: "accepted"
-[INFO] [/krpc_user] [1795254058.505554, 65.265000]: === Navigating to Checkpoint 4 ===
-[INFO] [/krpc_user] [1795254107.020672, 90.191000]: Arrived at CP 4. Notifying server...
-[INFO] [/krpc_user] [1795254107.044995, 90.203000]: notify checkpoint_id=4 passed
-[INFO] [/krpc_api_node] [1795254107.047384, 90.203000]: checkpoint_passed start: 4
-[INFO] [/krpc_api_node] [1795254107.051404, 90.203000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 4}
-[INFO] [/krpc_user] [1795254107.056835, 90.207000]: checkpoint_passed result: success: True
+[INFO] [/krpc_user] [1795268942.515113, 42.638000]: [  33.6 s] -> checkpoint 6: est 22.9 s, timeout 44.4 s
+[INFO] [/krpc_user] [1795268990.197268, 67.788000]: [  58.7 s] move result 0 after 25.1 s
+[INFO] [/krpc_user] [1795268992.436366, 68.938000]: [  59.9 s] cp 6 Lv3 held: level 3 | dist 0.013 m | centering 1.7 deg | roll 1.3 deg
+[INFO] [/krpc_api_node] [1795268992.438347, 68.939000]: checkpoint_passed start: 6
+[INFO] [/krpc_api_node] [1795268992.440585, 68.940000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 6}
+[INFO] [/krpc_user] [1795268992.443815, 68.941000]: [  59.9 s] reported cp 6: success: True
 message: "accepted"
-[INFO] [/krpc_user] [1795254107.057980, 90.208000]: === Navigating to Checkpoint 5 ===
-[WARN] [/krpc_user] [1795254164.858846, 120.209000]: Timeout moving to CP 5. Cancelling...
-[INFO] [/krpc_user] [1795254164.864364, 120.212000]: === Navigating to Checkpoint 6 ===
-[WARN] [/krpc_user] [1795254227.894101, 150.215000]: Timeout moving to CP 6. Cancelling...
-[INFO] [/krpc_user] [1795254227.909419, 150.224000]: === Navigating to Checkpoint 7 ===
-[WARN] [/krpc_user] [1795254286.046095, 180.226000]: Timeout moving to CP 7. Cancelling...
-[INFO] [/krpc_user] [1795254286.053936, 180.232000]: === Navigating to Checkpoint 10 ===
-[WARN] [/krpc_user] [1795254346.781800, 210.232000]: Timeout moving to CP 10. Cancelling...
-[INFO] [/krpc_user] [1795254346.793358, 210.239000]: === Navigating to Checkpoint 12 ===
-[ERROR] [/krpc_user] [1795254384.562678, 228.220000]: Movement to CP 12 failed with code 3
-[INFO] [/krpc_api_node] [1795254384.575999, 228.228000]: mission_finished
-[INFO] [/krpc_api_node] [1795254384.580499, 228.231000]: /gs/data: {"status": "Mission Finish"}
-[INFO] [/krpc_user] [1795254384.583477, 228.231000]: mission_finished result: success=True message=accepted
-[INFO] [/krpc_user] [1795254392.181488, 231.637000]: finish processing
+[INFO] [/krpc_user] [1795268992.445249, 68.942000]: [  59.9 s] -> checkpoint 1: est 19.6 s, timeout 39.4 s
+[INFO] [/krpc_user] [1795269039.654926, 93.093000]: [  84.0 s] move result 0 after 24.2 s
+[INFO] [/krpc_user] [1795269041.878836, 94.243000]: [  85.2 s] cp 1 Lv3 held: level 3 | dist 0.013 m | centering 1.6 deg | roll 0.7 deg
+[INFO] [/krpc_api_node] [1795269041.881776, 94.245000]: checkpoint_passed start: 1
+[INFO] [/krpc_api_node] [1795269041.886305, 94.248000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 1}
+[INFO] [/krpc_user] [1795269041.889875, 94.250000]: [  85.2 s] reported cp 1: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795269041.892824, 94.252000]: [  85.2 s] -> checkpoint 2: est 26.1 s, timeout 49.2 s
+[INFO] [/krpc_user] [1795269104.059847, 126.653000]: [ 117.6 s] move result 0 after 32.4 s
+[INFO] [/krpc_user] [1795269106.223774, 127.853000]: [ 118.8 s] cp 2 Lv3 held: level 3 | dist 0.013 m | centering 1.1 deg | roll 0.9 deg
+[INFO] [/krpc_api_node] [1795269106.227115, 127.854000]: checkpoint_passed start: 2
+[INFO] [/krpc_api_node] [1795269106.230687, 127.857000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 2}
+[INFO] [/krpc_user] [1795269106.234337, 127.858000]: [ 118.8 s] reported cp 2: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795269106.236509, 127.861000]: [ 118.8 s] -> checkpoint 3: est 12.3 s, timeout 28.5 s
+[INFO] [/krpc_user] [1795269124.801972, 137.812000]: [ 128.7 s] move result 0 after 10.0 s
+[INFO] [/krpc_user] [1795269135.926333, 143.662000]: [ 134.6 s] cp 3 Lv3 held: level 3 | dist 0.014 m | centering 1.4 deg | roll 0.5 deg
+[INFO] [/krpc_api_node] [1795269135.931168, 143.663000]: checkpoint_passed start: 3
+[INFO] [/krpc_api_node] [1795269135.934418, 143.665000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 3}
+[INFO] [/krpc_user] [1795269135.937515, 143.667000]: [ 134.6 s] reported cp 3: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795269135.939526, 143.669000]: [ 134.6 s] -> checkpoint 8: est 28.7 s, timeout 53.1 s
+[INFO] [/krpc_user] [1795269200.669904, 178.278000]: [ 169.2 s] move result 0 after 34.6 s
+[INFO] [/krpc_user] [1795269202.251131, 179.121000]: [ 170.0 s] cp 8 Lv3 held: level 3 | dist 0.012 m | centering 2.4 deg | roll 0.7 deg
+[INFO] [/krpc_api_node] [1795269202.254631, 179.121000]: checkpoint_passed start: 8
+[INFO] [/krpc_api_node] [1795269202.258323, 179.125000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 8}
+[INFO] [/krpc_user] [1795269202.261830, 179.126000]: [ 170.1 s] reported cp 8: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795269202.264890, 179.129000]: [ 170.1 s] -> checkpoint 5: est 27.2 s, timeout 50.7 s
+[INFO] [/krpc_user] [1795269263.621549, 212.230000]: [ 203.2 s] move result 0 after 33.1 s
+[INFO] [/krpc_user] [1795269265.770544, 213.330000]: [ 204.3 s] cp 5 Lv3 held: level 3 | dist 0.011 m | centering 0.2 deg | roll 0.0 deg
+[INFO] [/krpc_api_node] [1795269265.775358, 213.332000]: checkpoint_passed start: 5
+[INFO] [/krpc_api_node] [1795269265.777960, 213.333000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 5}
+[INFO] [/krpc_user] [1795269265.784313, 213.334000]: [ 204.3 s] reported cp 5: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795269265.788318, 213.335000]: [ 204.3 s] -> goal 12: est 47.4 s, timeout 60.0 s
+[INFO] [/krpc_user] [1795269375.384331, 270.436000]: [ 261.4 s] move result 0 after 57.1 s
+[INFO] [/krpc_user] [1795269378.084206, 271.936000]: [ 262.9 s] cp 12 Lv3 held: level 3 | dist 0.013 m | centering 1.3 deg | roll 3.6 deg
+[INFO] [/krpc_api_node] [1795269378.087585, 271.937000]: checkpoint_passed start: 12
+[INFO] [/krpc_api_node] [1795269378.093843, 271.939000]: /gs/data: {"status": "CheckPointPassed", "checkpoint_id": 12}
+[INFO] [/krpc_user] [1795269378.097652, 271.943000]: [ 262.9 s] reported cp 12: success: True
+message: "accepted"
+[INFO] [/krpc_user] [1795269378.099704, 271.945000]: [ 262.9 s] levels {9: 3, 6: 3, 1: 3, 2: 3, 3: 3, 8: 3, 5: 3, 12: 3}
+[INFO] [/krpc_api_node] [1795269378.106206, 271.949000]: mission_finished
+[INFO] [/krpc_api_node] [1795269378.107642, 271.950000]: /gs/data: {"status": "Mission Finish"}
+[INFO] [/krpc_user] [1795269378.115787, 271.953000]: /event/mission_finished -> success=True message=accepted
+[INFO] [/krpc_user] [1795269378.118589, 271.956000]: [ 262.9 s] mission finished sent
+[INFO] [/krpc_user] [1795269379.112998, 272.526000]: finish processing
 shutdown request: user request
 [1m[krpc_user-2] process has finished cleanly
-log file: /tmp/share/logs/latest/user_programs_logs/ros/369c993a-e58f-11f1-b993-668ea74f3da6/krpc_user-2*.log[0m
+log file: /tmp/share/logs/latest/user_programs_logs/ros/fce07aa4-e5b1-11f1-b51f-5a0759cfe8e2/krpc_user-2*.log[0m
