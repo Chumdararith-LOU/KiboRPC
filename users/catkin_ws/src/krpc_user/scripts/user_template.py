@@ -31,14 +31,14 @@ import geometry as g  # noqa: E402
 import planner  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.2 2026-11-21"
+VERSION = "v1.3 2026-11-21"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
 # ---------------------------------------------------------------------------
 TIME_LIMIT_S = 300.0        # official mission limit
 GO_HOME_RESERVE_S = 15.0    # margin kept when deciding to visit one more checkpoint
-GO_HOME_FACTOR = 1.15       # estimates can be ~5 s short per leg (E2), so pad them
+GO_HOME_FACTOR = 1.05       # E1-E5: 39 legs, real/estimate = 0.96 overall, worst leg 1.05
 HARD_STOP_S = 285.0         # past this, stop everything and report mission finished
 HOLD_S = 1.0                # Lv3 + still must hold this long before reporting
 STILL_WINDOW_S = 0.5        # stillness is measured from pose change over this window,
