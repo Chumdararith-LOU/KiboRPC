@@ -31,7 +31,7 @@ import geometry as g  # noqa: E402
 import planner  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.1 2026-11-21"
+VERSION = "v1.2 2026-11-21"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -370,9 +370,14 @@ class UserTemplate:
     def __fly_course(self, stops, goal):
         nav = self.__wait_for_nav()
         start = (nav[0], nav[1])
-        order, est = planner.plan_route(start, [(s.id, s.position, s.target_q) for s in stops],
-                                        (goal.id, goal.position, goal.target_q), MODEL)
-        rospy.loginfo('[%6.1f s] route %s, estimated %.0f s', self.__elapsed(), order, est)
+        # v1.2: plan the best subset that fits the budget, using the same rule as "go home".
+        order, est = planner.plan_route_budget(
+            start, [(s.id, s.position, s.target_q) for s in stops],
+            (goal.id, goal.position, goal.target_q), MODEL,
+            TIME_LIMIT_S, GO_HOME_RESERVE_S, GO_HOME_FACTOR, t_start=self.__elapsed())
+        skipped = [s.id for s in stops if s.id not in order]
+        rospy.loginfo('[%6.1f s] route %s, estimated finish %.0f s, planned skips %s',
+                      self.__elapsed(), order, est, skipped)
         by_id = dict((s.id, s) for s in stops)
         levels = {}
         for cp_id in order[:-1]:

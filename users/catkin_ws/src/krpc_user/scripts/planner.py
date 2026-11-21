@@ -101,3 +101,56 @@ def route_time(start, legs, model):
         t += model.move_time(cur[0], cur[1], leg[0], leg[1])
         cur = leg
     return t
+
+
+def plan_route_budget(start, stops, goal, model, time_limit, reserve, pad, t_start=0.0):
+    """Best subset + order that fits the time budget (orienteering, Module 10/11).
+
+    A leg to checkpoint c is allowed only if, when leaving for it at time t,
+        t + pad * (time(here -> c) + time(c -> goal)) + reserve <= time_limit
+    which is exactly the mission's live "go home" rule, so the plan and the
+    rule never disagree. Among plans that fit, it maximises the number of
+    checkpoints, then minimises the finish time.
+    Returns (ordered keys ending with the goal key, estimated finish time).
+    """
+    n = len(stops)
+    nodes = [start] + [(p, q) for _, p, q in stops] + [(goal[1], goal[2])]
+    gi = n + 1
+    c = [[model.move_time(nodes[i][0], nodes[i][1], nodes[j][0], nodes[j][1])
+          for j in range(n + 2)] for i in range(n + 2)]
+
+    def ok(t, i, j):
+        return t + pad * (c[i][j] + c[j][gi]) + reserve <= time_limit
+
+    best = {}
+    for k in range(n):
+        if ok(t_start, 0, k + 1):
+            best[(1 << k, k)] = (t_start + c[0][k + 1], -1)
+    for mask in range(1, 1 << n):
+        for last in range(n):
+            entry = best.get((mask, last))
+            if entry is None:
+                continue
+            t = entry[0]
+            for nxt in range(n):
+                if mask >> nxt & 1 or not ok(t, last + 1, nxt + 1):
+                    continue
+                key = (mask | 1 << nxt, nxt)
+                val = t + c[last + 1][nxt + 1]
+                if key not in best or val < best[key][0]:
+                    best[key] = (val, last)
+    # Pick: most checkpoints, then earliest finish at the goal.
+    choice = (0, -(t_start + c[0][gi]), 0, -1)
+    for (mask, last), (t, _) in best.items():
+        cand = (bin(mask).count("1"), -(t + c[last + 1][gi]), mask, last)
+        if cand[:2] > choice[:2]:
+            choice = cand
+    count, neg_finish, mask, last = choice
+    order = []
+    while last != -1:
+        order.append(last)
+        prev = best[(mask, last)][1]
+        mask ^= 1 << last
+        last = prev
+    order.reverse()
+    return [stops[k][0] for k in order] + [goal[0]], -neg_finish
