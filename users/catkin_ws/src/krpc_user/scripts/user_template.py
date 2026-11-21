@@ -1,20 +1,64 @@
 #!/usr/bin/python3
 # -*- coding:utf-8 -*-
-import json
-import rospy
-import actionlib
-from platform_msgs.msg import UserLogic
-from platform_msgs.srv import StopProcessingUserNode, StopProcessingUserNodeResponse
-from geometry_msgs.msg import PoseStamped
-from krpc_ib2_msgs.srv import MissionStart, MissionFinished, CheckPoints
-from krpc_ib2_msgs.msg import CheckpointPassedAction, CheckpointPassedGoal
-from ib2_msgs.msg import CtlCommandAction, CtlCommandGoal, CtlCommandResult, CtlStatusType
+"""Kibo-RPC 7th, team program v1.
 
-# Optional IF examples. Uncomment only what your program uses.
-# from std_msgs.msg import Time
-# from platform_msgs.msg import UserNodeStatus
-# from sensor_msgs.msg import Image
-# from ib2_msgs.msg import Navigation
+Design: course Module 13. One rule above all: never report a checkpoint until
+our own copy of the judge (scorer.py) says Lv3 and the robot has held still
+for HOLD_S seconds. Around it: a Held-Karp route (planner.py), a mission clock
+with a "go home" rule, bounded waits everywhere, and a safe stop.
+
+Helper modules geometry.py, scorer.py and planner.py live next to this file.
+"""
+import json
+import os
+import sys
+import threading
+from collections import deque
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
+import rospy  # noqa: E402
+import actionlib  # noqa: E402
+from platform_msgs.msg import UserLogic  # noqa: E402
+from platform_msgs.srv import StopProcessingUserNode, StopProcessingUserNodeResponse  # noqa: E402
+from geometry_msgs.msg import PoseStamped  # noqa: E402
+from krpc_ib2_msgs.srv import MissionStart, MissionFinished, CheckPoints  # noqa: E402
+from krpc_ib2_msgs.msg import CheckpointPassedAction, CheckpointPassedGoal  # noqa: E402
+from ib2_msgs.msg import CtlCommandAction, CtlCommandGoal, CtlCommandResult, CtlStatusType  # noqa: E402
+from ib2_msgs.msg import Navigation  # noqa: E402
+
+import geometry as g  # noqa: E402
+import planner  # noqa: E402
+import scorer  # noqa: E402
+
+VERSION = "v1.0 2026-11-21"
+
+# ---------------------------------------------------------------------------
+# Tuning (seconds are ROS/sim time). Measured values: experiment log, E1.
+# ---------------------------------------------------------------------------
+TIME_LIMIT_S = 300.0        # official mission limit
+GO_HOME_RESERVE_S = 20.0    # margin kept when deciding to visit one more checkpoint
+HARD_STOP_S = 285.0         # past this, stop everything and report mission finished
+HOLD_S = 1.0                # Lv3 + still must hold this long before reporting
+STILL_WINDOW_S = 0.5        # stillness is measured from pose change over this window,
+STILL_SPEED = 0.01          # m/s    not from nav twist (sim adds ~7 mm/s velocity bias)
+STILL_TURN_DEG = 2.0        # deg/s
+MOVE_TIMEOUT_MIN_S = 25.0
+MOVE_TIMEOUT_MAX_S = 60.0
+EXTRA_SETTLE_S = 6.0        # extra watching after the controller reports success
+MAX_AIM_FIXES = 1
+WAIT_SERVICE_S = 10.0
+WAIT_ACTION_S = 10.0
+CANCEL_WAIT_S = 10.0
+NAV_STALE_S = 1.0
+LOOP_HZ = 20.0
+
+MODEL = planner.MotionModel(accel=0.0142, v_max=0.20, ang_accel=0.15, w_max=0.4363,
+                            settle=5.0)
+
+
+class MissionAbort(Exception):
+    """Raised to leave the checkpoint loop (stop request, hard stop, shutdown)."""
 
 
 class UserTemplate:
@@ -22,228 +66,325 @@ class UserTemplate:
     def __init__(self):
         rospy.init_node('krpc_user')
 
-        # Action client
+        # Action clients
         self.__command = actionlib.SimpleActionClient('/ctl/command', CtlCommandAction)
         self.__checkpoint_client = actionlib.SimpleActionClient('/event/checkpoint_passed', CheckpointPassedAction)
 
-        # Service client
+        # Service clients
         self.__mission_start = rospy.ServiceProxy('/event/mission_start', MissionStart)
         self.__mission_finished = rospy.ServiceProxy('/event/mission_finished', MissionFinished)
         self.__checkpoints = rospy.ServiceProxy('/mission/get_checkpoints', CheckPoints)
 
+        # Navigation (our pose, the same topic the judge reads)
+        self.__nav_lock = threading.Lock()
+        self.__nav = None
+        self.__nav_stamp = None
+        self.__nav_hist = deque()
+        self.__subscriber_nav = rospy.Subscriber('/sensor_fusion/navigation', Navigation, self.__callback_nav)
+
         # Subscriber
         self.__subscriber_start = rospy.Subscriber('/ib2_user/start', UserLogic, self.__callback_start)  # DO NOT REMOVE THIS LINE
-
-        # Optional subscriber examples.
-        # /sensor_fusion/navigation provides the current Int-Ball2 pose, velocity and acceleration.
-        # self.__subscriber_nav = rospy.Subscriber('/sensor_fusion/navigation', Navigation, self.__callback_nav)
-        # /camera_main/image_raw provides the main camera image.
-        # self.__subscriber_camera = rospy.Subscriber('/camera_main/image_raw', Image, self.__callback_camera_image)
 
         # Service server
         self.__stop_processing_server = rospy.Service('/ib2_user/stop', StopProcessingUserNode, self.__stop_processing) # DO NOT REMOVE THIS LINE
 
         self.__started = False
         self.__action_active = False
+        self.__stop_requested = False
+        self.__t0 = None
+        self.__finished_sent = False
         rospy.set_param('/ib2_user/ready', True) # DO NOT REMOVE THIS LINE
+        rospy.loginfo('krpc_user %s ready', VERSION)
 
-    def __notify_mission_start(self):
-        rospy.wait_for_service('/event/mission_start')
-        res = self.__mission_start()
-        rospy.loginfo('mission_start result: success=%s message=%s', res.success, res.message)
-        return res.success
+    # ------------------------------------------------------------------
+    # Small helpers
+    # ------------------------------------------------------------------
+    def __callback_nav(self, msg):
+        p = msg.pose.pose.position
+        o = msg.pose.pose.orientation
+        v = msg.twist.linear
+        w = msg.twist.angular
+        now = rospy.get_time()
+        with self.__nav_lock:
+            self.__nav = ([p.x, p.y, p.z], [o.x, o.y, o.z, o.w],
+                          [v.x, v.y, v.z], [w.x, w.y, w.z])
+            self.__nav_stamp = now
+            self.__nav_hist.append((now, self.__nav[0], self.__nav[1]))
+            while self.__nav_hist and now - self.__nav_hist[0][0] > 2.0:
+                self.__nav_hist.popleft()
 
-    def __notify_mission_finished(self):
-        rospy.wait_for_service('/event/mission_finished')
-        res = self.__mission_finished()
-        rospy.loginfo('mission_finished result: success=%s message=%s', res.success, res.message)
-        return res.success
+    def __pose(self):
+        """Latest (position, quaternion, velocity, angular velocity), or None if stale."""
+        with self.__nav_lock:
+            nav, stamp = self.__nav, self.__nav_stamp
+        if nav is None or stamp is None or rospy.get_time() - stamp > NAV_STALE_S:
+            return None
+        return nav
 
-    def __notify_checkpoint_passed(self, checkpoint_id):
-        rospy.loginfo('notify checkpoint_id=%d passed', checkpoint_id)
-        self.__checkpoint_client.wait_for_server()
-        goal = CheckpointPassedGoal()
-        goal.checkpoint_id = checkpoint_id
-        self.__checkpoint_client.send_goal(goal)
-        while not rospy.is_shutdown():
-            if self.__checkpoint_client.wait_for_result(rospy.Duration(0.2)):
-                result = self.__checkpoint_client.get_result()
-                rospy.loginfo('checkpoint_passed result: %s', result)
-                return result.success
+    def __is_still(self):
+        """True if position and attitude barely changed over the last STILL_WINDOW_S."""
+        with self.__nav_lock:
+            hist = list(self.__nav_hist)
+        if len(hist) < 2:
+            return False
+        t1, p1, q1 = hist[-1]
+        old = [h for h in hist if t1 - h[0] >= STILL_WINDOW_S]
+        if not old:
+            return False
+        t0, p0, q0 = old[-1]
+        dt = t1 - t0
+        return (g.distance(p0, p1) / dt < STILL_SPEED
+                and g.q_angle_deg(q0, q1) / dt < STILL_TURN_DEG)
+
+    def __elapsed(self):
+        return rospy.get_time() - self.__t0 if self.__t0 is not None else 0.0
+
+    def __check_abort(self):
         if rospy.is_shutdown():
-            self.__checkpoint_client.cancel_goal()
-            rospy.logwarn('checkpoint_passed action cancelled by node shutdown')
-        return False
+            raise MissionAbort('ROS shutdown')
+        if self.__stop_requested:
+            raise MissionAbort('stop requested')
+        if self.__elapsed() > HARD_STOP_S:
+            raise MissionAbort('hard stop at %.1f s' % self.__elapsed())
 
-    def __get_checkpoint_id(self, checkpoint):
-        for key in ('checkpoint_id', 'checkpointid', 'id'):
-            if key in checkpoint:
-                return int(checkpoint[key])
+    def __call_service(self, name, proxy, retries=3):
+        for attempt in range(1, retries + 1):
+            try:
+                rospy.wait_for_service(name, timeout=WAIT_SERVICE_S)
+                res = proxy()
+                rospy.loginfo('%s -> success=%s message=%s', name, res.success,
+                              res.message if len(res.message) < 200 else res.message[:200] + '...')
+                return res
+            except Exception as exc:  # rospy.ROSException, ServiceException
+                rospy.logwarn('%s attempt %d/%d failed: %s', name, attempt, retries, exc)
+                if rospy.is_shutdown():
+                    break
         return None
 
-    def __resolve_first_checkpoint_target(self):
-        default_target = {
-            'checkpoint_id': 1,
-            'position': [0.0, 0.0, 0.0],
-            'quaternion': [0.0, 0.0, 0.0, 1.0],
-        }
-        rospy.wait_for_service('/mission/get_checkpoints')
-        res = self.__checkpoints()
-        rospy.loginfo('get_checkpoints result: success=%s message=%s', res.success, res.message)
-        if not res.success:
-            return default_target
-
-        try:
-            payload = json.loads(res.message)
-            checkpoints = payload.get('checkpoints', payload.get('Checkpoints', []))
-            checkpoints = [cp for cp in checkpoints if isinstance(cp, dict) and self.__get_checkpoint_id(cp) is not None]
-            if not checkpoints:
-                rospy.logwarn('No checkpoints found in payload')
-                return default_target
-
-            checkpoint = min(checkpoints, key=self.__get_checkpoint_id)
-            position = checkpoint.get('position', default_target['position'])
-
-            if not (isinstance(position, list) and len(position) >= 3):
-                rospy.logwarn('Invalid checkpoint position format')
-                return default_target
-
-            quaternion = default_target['quaternion']
-            attitude = checkpoint.get('attitude')
-            if isinstance(attitude, dict):
-                attitude_quaternion = attitude.get('quaternion')
-                if isinstance(attitude_quaternion, list) and len(attitude_quaternion) >= 4:
-                    quaternion = attitude_quaternion
-
-            return {
-                'checkpoint_id': self.__get_checkpoint_id(checkpoint),
-                'position': [float(position[0]), float(position[1]), float(position[2])],
-                'quaternion': [float(quaternion[0]), float(quaternion[1]), float(quaternion[2]), float(quaternion[3])],
-            }
-        except Exception as e:
-            rospy.logwarn('Failed to parse checkpoints payload: %s', e)
-
-        return default_target
-
-    def __move_to_checkpoint(self, checkpoint_target):
-        position = checkpoint_target['position']
-        quaternion = checkpoint_target['quaternion']
-        rospy.loginfo(
-            'moving to checkpoint_id=%d: x=%.3f y=%.3f z=%.3f qx=%.4f qy=%.4f qz=%.4f qw=%.4f',
-            checkpoint_target['checkpoint_id'],
-            position[0], position[1], position[2],
-            quaternion[0], quaternion[1], quaternion[2], quaternion[3]
-        )
-
+    # ------------------------------------------------------------------
+    # Moving
+    # ------------------------------------------------------------------
+    def __send_move(self, position, quaternion):
         target = PoseStamped()
-        target.pose.position.x = position[0]
-        target.pose.position.y = position[1]
-        target.pose.position.z = position[2]
-        target.pose.orientation.x = quaternion[0]
-        target.pose.orientation.y = quaternion[1]
-        target.pose.orientation.z = quaternion[2]
-        target.pose.orientation.w = quaternion[3]
-
-        command_type = CtlStatusType(type=CtlStatusType.MOVE_TO_ABSOLUTE_TARGET)
-        goal = CtlCommandGoal(target=target, type=command_type)
+        target.header.frame_id = 'iss_body'
+        target.header.stamp = rospy.Time.now()
+        target.pose.position.x, target.pose.position.y, target.pose.position.z = position
+        (target.pose.orientation.x, target.pose.orientation.y,
+         target.pose.orientation.z, target.pose.orientation.w) = quaternion
+        goal = CtlCommandGoal(target=target, type=CtlStatusType(type=CtlStatusType.MOVE_TO_ABSOLUTE_TARGET))
+        self.__command.send_goal(goal)
         self.__action_active = True
-        try:
-            self.__command.send_goal(goal)
-            while not rospy.is_shutdown():
-                if self.__command.wait_for_result(rospy.Duration(0.2)):
-                    result = self.__command.get_result()
-                    rospy.loginfo('move command result: %s', result)
-                    return result.type == CtlCommandResult.TERMINATE_SUCCESS
-            if rospy.is_shutdown():
-                self.__command.cancel_goal()
-                rospy.logwarn('move command cancelled by node shutdown')
-            return False
-        finally:
+
+    def __action_done(self):
+        """Poll the move action briefly. Returns its result type, or None while running."""
+        if not self.__action_active:
+            return CtlCommandResult.TERMINATE_SUCCESS
+        if self.__command.wait_for_result(rospy.Duration(0.01)):
             self.__action_active = False
+            res = self.__command.get_result()
+            return res.type if res is not None else CtlCommandResult.TERMINATE_ABORTED
+        return None
 
-    def __run_user_flow(self, msg):
+    def __cancel_move(self):
+        """Cancel the running move and WAIT until it has really ended (lesson from E1)."""
+        if not self.__action_active:
+            return True
+        self.__command.cancel_goal()
+        ok = self.__command.wait_for_result(rospy.Duration(CANCEL_WAIT_S))
+        self.__action_active = False
+        if not ok:
+            rospy.logwarn('cancel did not complete within %.0f s', CANCEL_WAIT_S)
+        return ok
+
+    def __wait_move_end(self, deadline):
+        """After reporting, let the running move finish before the next goal."""
+        rate = rospy.Rate(LOOP_HZ)
+        while self.__action_active and rospy.get_time() < deadline:
+            if rospy.is_shutdown() or self.__stop_requested:
+                break
+            if self.__action_done() is not None:
+                return
+            rate.sleep()
+        self.__cancel_move()
+
+    # ------------------------------------------------------------------
+    # Fly to one checkpoint, self-check, and report
+    # ------------------------------------------------------------------
+    def __visit(self, spec, is_goal=False):
+        """Returns the level reported (0 if not reported)."""
+        tag = 'goal' if is_goal else 'checkpoint'
+        nav = self.__pose()
+        est = MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q, include_settle=False) if nav else 40.0
+        timeout = max(MOVE_TIMEOUT_MIN_S, min(MOVE_TIMEOUT_MAX_S, 1.5 * est + 10.0))
+        rospy.loginfo('[%6.1f s] -> %s %d: est %.1f s, timeout %.1f s', self.__elapsed(), tag, spec.id, est, timeout)
+
+        self.__send_move(spec.position, spec.target_q)
+        t_start = rospy.get_time()
+        move_deadline = t_start + timeout
+        settle_deadline = None
+        hold_since = None
+        best = None
+        aim_fixes = 0
+        rate = rospy.Rate(LOOP_HZ)
+
+        while True:
+            self.__check_abort()
+            now = rospy.get_time()
+            nav = self.__pose()
+            if nav is not None:
+                ev = scorer.evaluate(nav[0], nav[1], spec)
+                still = self.__is_still()
+                if best is None or ev['level'] > best['level']:
+                    best = ev
+                if ev['level'] == 3 and still:
+                    hold_since = hold_since if hold_since is not None else now
+                    if now - hold_since >= HOLD_S:
+                        self.__log_eval(spec, ev, 'Lv3 held')
+                        self.__report(spec)
+                        self.__wait_move_end(now + EXTRA_SETTLE_S)
+                        return 3
+                else:
+                    hold_since = None
+            else:
+                hold_since = None
+
+            result = self.__action_done()
+            if result is not None and settle_deadline is None:
+                rospy.loginfo('[%6.1f s] move result %d after %.1f s', self.__elapsed(), result, now - t_start)
+                settle_deadline = now + EXTRA_SETTLE_S
+
+            if settle_deadline is not None and now > settle_deadline:
+                # Controller finished but our check never held Lv3. Try one aim fix.
+                if nav is not None and aim_fixes < MAX_AIM_FIXES and ev['distance_level'] >= 1:
+                    aim_fixes += 1
+                    q_fix = g.aim_from_here(nav[0], spec.marker_position, spec.target_q)
+                    self.__log_eval(spec, ev, 'aim fix %d' % aim_fixes)
+                    self.__send_move(spec.position, q_fix)
+                    settle_deadline = None
+                    move_deadline = now + MOVE_TIMEOUT_MIN_S
+                    continue
+                break
+
+            if now > move_deadline:
+                rospy.logwarn('[%6.1f s] move to %s %d timed out', self.__elapsed(), tag, spec.id)
+                self.__cancel_move()
+                break
+            rate.sleep()
+
+        # Could not hold Lv3: report the best we have now if it scores at all.
+        self.__cancel_move()
+        nav = self.__pose()
+        if nav is not None:
+            ev = scorer.evaluate(nav[0], nav[1], spec)
+            if ev['level'] >= 1:
+                self.__log_eval(spec, ev, 'fallback')
+                self.__report(spec)
+                return ev['level']
+            self.__log_eval(spec, ev, 'NOT reported')
+        return 0
+
+    def __log_eval(self, spec, ev, why):
+        rospy.loginfo('[%6.1f s] cp %d %s: level %d | dist %.3f m | centering %s | roll %s',
+                      self.__elapsed(), spec.id, why, ev['level'], ev['distance'],
+                      '%.1f deg' % ev['centering_deg'] if ev['centering_deg'] is not None else '-',
+                      '%.1f deg' % ev['roll_deg'] if ev['roll_deg'] is not None else '-')
+
+    def __report(self, spec):
         try:
-            if not self.__notify_mission_start():
-                return
-            
-            
-            
-            # ==========================================
-            # USER EDIT AREA: define route planning and game-specific flow here.
-            # ==========================================
-            rospy.loginfo("--- Fetching Checkpoints from Server ---")
-            
-            # 1. Fetch the checkpoint definitions from the server
-            rospy.wait_for_service('/mission/get_checkpoints')
-            res = self.__checkpoints()
-            
-            if not res.success:
-                rospy.logerr("Failed to get checkpoints!")
-                return
-                
-            # The server returns a JSON string. We must parse it.
-            data = json.loads(res.message)
-            checkpoints = data['checkpoints']
-            goal_id = data['goalpoint_id']
-            
-            rospy.loginfo(f"Found {len(checkpoints)} checkpoints. Goal ID is {goal_id}.")
-            
-            # 2. Loop through EVERY checkpoint
-            for cp in checkpoints:
-                cp_id = cp['checkpoint_id']
-                target_pos = cp['position']             # [x, y, z]
-                target_att = cp['attitude']['quaternion'] # [x, y, z, w]
-                
-                rospy.loginfo(f"=== Navigating to Checkpoint {cp_id} ===")
-                
-                # 3. Build the Target Pose
-                target = PoseStamped()
-                target.header.frame_id = "iss_body"
-                
-                # Set Position
-                target.pose.position.x = target_pos[0]
-                target.pose.position.y = target_pos[1]
-                target.pose.position.z = target_pos[2]
-                
-                # Set Orientation (The "Secret Sauce" for max points!)
-                target.pose.orientation.x = target_att[0]
-                target.pose.orientation.y = target_att[1]
-                target.pose.orientation.z = target_att[2]
-                target.pose.orientation.w = target_att[3]
-                
-                # 4. Send Movement Command
-                command_type = CtlStatusType(type=CtlStatusType.MOVE_TO_ABSOLUTE_TARGET)
-                goal = CtlCommandGoal(target=target, type=command_type)
-                
-                self.__command.send_goal(goal)
-                finished_in_time = self.__command.wait_for_result(rospy.Duration(30.0))
-                
-                if not finished_in_time:
-                    rospy.logwarn(f"Timeout moving to CP {cp_id}. Cancelling...")
-                    self.__command.cancel_goal()
-                    continue
-                
-                result = self.__command.get_result()
-                if result.type != CtlCommandResult.TERMINATE_SUCCESS:
-                    rospy.logerr(f"Movement to CP {cp_id} failed with code {result.type}")
-                    continue
-                    
-                rospy.loginfo(f"Arrived at CP {cp_id}. Notifying server...")
-                
-                # 5. Notify the server that we passed this checkpoint
-                if not self.__notify_checkpoint_passed(cp_id):
-                    rospy.logerr(f"Failed to notify checkpoint {cp_id} passed!")
-                    
-            # ==========================================
-            # END USER EDIT AREA
-            # ==========================================
+            if not self.__checkpoint_client.wait_for_server(rospy.Duration(WAIT_ACTION_S)):
+                rospy.logerr('checkpoint_passed server not available')
+                return False
+            self.__checkpoint_client.send_goal(CheckpointPassedGoal(checkpoint_id=spec.id))
+            if self.__checkpoint_client.wait_for_result(rospy.Duration(WAIT_ACTION_S)):
+                rospy.loginfo('[%6.1f s] reported cp %d: %s', self.__elapsed(), spec.id,
+                              self.__checkpoint_client.get_result())
+                return True
+            self.__checkpoint_client.cancel_goal()
+            rospy.logwarn('checkpoint_passed for %d did not answer', spec.id)
+        except Exception as exc:
+            rospy.logerr('report failed: %s', exc)
+        return False
 
-            
-            if not rospy.is_shutdown():
-                self.__notify_mission_finished()
+    # ------------------------------------------------------------------
+    # Mission flow
+    # ------------------------------------------------------------------
+    def __run_user_flow(self, msg):
+        res = self.__call_service('/event/mission_start', self.__mission_start)
+        self.__t0 = rospy.get_time()
+        if res is None:
+            rospy.logerr('mission_start failed; continuing anyway')
+        try:
+            if not self.__command.wait_for_server(rospy.Duration(WAIT_ACTION_S)):
+                rospy.logerr('/ctl/command server not available')
+                return
+            course = self.__load_course()
+            if course is None:
+                return
+            stops, goal = course
+            self.__fly_course(stops, goal)
+        except MissionAbort as exc:
+            rospy.logwarn('[%6.1f s] mission aborted: %s', self.__elapsed(), exc)
         except Exception as exc:
             rospy.logerr('user flow failed: %s', exc)
+        finally:
+            self.__cancel_move()
+            self.__finish()
 
+    def __load_course(self):
+        res = self.__call_service('/mission/get_checkpoints', self.__checkpoints)
+        if res is None or not res.success:
+            rospy.logerr('no checkpoints')
+            return None
+        data = json.loads(res.message)
+        cps = data.get('checkpoints', data.get('Checkpoints', []))
+        specs = [scorer.CheckpointSpec(cp) for cp in cps]
+        goal_id = data.get('goalpoint_id')
+        goal = [s for s in specs if s.id == goal_id]
+        if not goal:
+            rospy.logerr('goal %s not among checkpoints', goal_id)
+            return None
+        stops = [s for s in specs if s.id != goal_id]
+        rospy.loginfo('course: %d checkpoints + goal %d', len(stops), goal_id)
+        return stops, goal[0]
+
+    def __fly_course(self, stops, goal):
+        nav = self.__wait_for_nav()
+        start = (nav[0], nav[1])
+        order, est = planner.plan_route(start, [(s.id, s.position, s.target_q) for s in stops],
+                                        (goal.id, goal.position, goal.target_q), MODEL)
+        rospy.loginfo('[%6.1f s] route %s, estimated %.0f s', self.__elapsed(), order, est)
+        by_id = dict((s.id, s) for s in stops)
+        levels = {}
+        for cp_id in order[:-1]:
+            self.__check_abort()
+            spec = by_id[cp_id]
+            nav = self.__wait_for_nav()
+            need = (MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q)
+                    + MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q))
+            if self.__elapsed() + need + GO_HOME_RESERVE_S > TIME_LIMIT_S:
+                rospy.logwarn('[%6.1f s] go home: cp %d needs %.0f s more', self.__elapsed(), cp_id, need)
+                break
+            levels[cp_id] = self.__visit(spec)
+        levels[goal.id] = self.__visit(goal, is_goal=True)
+        rospy.loginfo('[%6.1f s] levels %s', self.__elapsed(), levels)
+
+    def __wait_for_nav(self):
+        rate = rospy.Rate(LOOP_HZ)
+        t_end = rospy.get_time() + 5.0
+        while rospy.get_time() < t_end:
+            nav = self.__pose()
+            if nav is not None:
+                return nav
+            self.__check_abort()
+            rate.sleep()
+        raise MissionAbort('no navigation data')
+
+    def __finish(self):
+        if self.__finished_sent or rospy.is_shutdown():
+            return
+        self.__finished_sent = True
+        self.__call_service('/event/mission_finished', self.__mission_finished)
+        rospy.loginfo('[%6.1f s] mission finished sent', self.__elapsed())
 
     def __callback_start(self, msg):
         if self.__started:
@@ -254,22 +395,13 @@ class UserTemplate:
         rospy.loginfo('start %s', msg)
         self.__run_user_flow(msg)
 
-    # Optional subscriber callback examples.
-    # def __callback_nav(self, data):
-    #     position = data.pose.pose.position
-    #     orientation = data.pose.pose.orientation
-    #     rospy.loginfo('current pose: x=%.3f y=%.3f z=%.3f qx=%.4f qy=%.4f qz=%.4f qw=%.4f',
-    #                   position.x, position.y, position.z,
-    #                   orientation.x, orientation.y, orientation.z, orientation.w)
-    #
-    # def __callback_camera_image(self, data):
-    #     rospy.loginfo('camera image: width=%d height=%d encoding=%s',
-    #                   data.width, data.height, data.encoding)
-
     def __stop_processing(self, request):
         try:
+            self.__stop_requested = True
             if self.__action_active:
                 self.__command.cancel_goal()
+                self.__command.wait_for_result(rospy.Duration(CANCEL_WAIT_S))
+                self.__action_active = False
             rospy.loginfo('finish processing')
             return StopProcessingUserNodeResponse(result=StopProcessingUserNodeResponse.SUCCESS)
         except Exception as exc:
