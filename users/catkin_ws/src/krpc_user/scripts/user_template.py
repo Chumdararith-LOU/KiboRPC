@@ -31,20 +31,23 @@ import geometry as g  # noqa: E402
 import planner  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.0 2026-11-21"
+VERSION = "v1.1 2026-11-21"
 
 # ---------------------------------------------------------------------------
-# Tuning (seconds are ROS/sim time). Measured values: experiment log, E1.
+# Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
 # ---------------------------------------------------------------------------
 TIME_LIMIT_S = 300.0        # official mission limit
-GO_HOME_RESERVE_S = 20.0    # margin kept when deciding to visit one more checkpoint
+GO_HOME_RESERVE_S = 15.0    # margin kept when deciding to visit one more checkpoint
+GO_HOME_FACTOR = 1.15       # estimates can be ~5 s short per leg (E2), so pad them
 HARD_STOP_S = 285.0         # past this, stop everything and report mission finished
 HOLD_S = 1.0                # Lv3 + still must hold this long before reporting
 STILL_WINDOW_S = 0.5        # stillness is measured from pose change over this window,
-STILL_SPEED = 0.01          # m/s    not from nav twist (sim adds ~7 mm/s velocity bias)
-STILL_TURN_DEG = 2.0        # deg/s
+STILL_SPEED = 0.03          # m/s    not from nav twist (sim adds ~7 mm/s velocity bias)
+STILL_TURN_DEG = 8.0        # deg/s  (E2: 0.01 / 2.0 waited ~1.6 s per checkpoint for nothing)
+DIST_MARGIN = 0.8           # report only if distance <= 0.8 x the Lv3 radius ...
+ANGLE_MARGIN_DEG = 2.0      # ... and centering, roll <= Lv3 angle - 2 deg
 MOVE_TIMEOUT_MIN_S = 25.0
-MOVE_TIMEOUT_MAX_S = 60.0
+MOVE_TIMEOUT_MAX_S = 100.0  # E2: the 5.3 m goal leg took 57 s; v1's 60 s cap was too tight
 EXTRA_SETTLE_S = 6.0        # extra watching after the controller reports success
 MAX_AIM_FIXES = 1
 WAIT_SERVICE_S = 10.0
@@ -53,8 +56,8 @@ CANCEL_WAIT_S = 10.0
 NAV_STALE_S = 1.0
 LOOP_HZ = 20.0
 
-MODEL = planner.MotionModel(accel=0.0142, v_max=0.20, ang_accel=0.15, w_max=0.4363,
-                            settle=5.0)
+MODEL = planner.MotionModel(accel=0.010, v_max=0.20, ang_accel=0.18, w_max=0.4363,
+                            settle=3.0)
 
 
 class MissionAbort(Exception):
@@ -215,7 +218,7 @@ class UserTemplate:
         tag = 'goal' if is_goal else 'checkpoint'
         nav = self.__pose()
         est = MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q, include_settle=False) if nav else 40.0
-        timeout = max(MOVE_TIMEOUT_MIN_S, min(MOVE_TIMEOUT_MAX_S, 1.5 * est + 10.0))
+        timeout = max(MOVE_TIMEOUT_MIN_S, min(MOVE_TIMEOUT_MAX_S, 1.5 * est + 15.0))
         rospy.loginfo('[%6.1f s] -> %s %d: est %.1f s, timeout %.1f s', self.__elapsed(), tag, spec.id, est, timeout)
 
         self.__send_move(spec.position, spec.target_q)
@@ -236,7 +239,7 @@ class UserTemplate:
                 still = self.__is_still()
                 if best is None or ev['level'] > best['level']:
                     best = ev
-                if ev['level'] == 3 and still:
+                if self.__safe_lv3(ev, spec) and still:
                     hold_since = hold_since if hold_since is not None else now
                     if now - hold_since >= HOLD_S:
                         self.__log_eval(spec, ev, 'Lv3 held')
@@ -282,6 +285,23 @@ class UserTemplate:
                 return ev['level']
             self.__log_eval(spec, ev, 'NOT reported')
         return 0
+
+    @staticmethod
+    def __safe_lv3(ev, spec):
+        """Lv3 with a margin, so a small wobble at report time cannot drop a level."""
+        if ev['level'] != 3:
+            return False
+        r3 = min(t for t, lvl in spec.distance_bands if lvl == 3) if any(
+            lvl == 3 for _, lvl in spec.distance_bands) else 0.1
+        if ev['distance'] > DIST_MARGIN * r3:
+            return False
+        for value, bands in ((ev['centering_deg'], spec.centering_bands), (ev['roll_deg'], spec.roll_bands)):
+            if value is None or not bands:
+                continue
+            a3 = min([t for t, lvl in bands if lvl == 3] or [10.0])
+            if value > a3 - ANGLE_MARGIN_DEG:
+                return False
+        return True
 
     def __log_eval(self, spec, ev, why):
         rospy.loginfo('[%6.1f s] cp %d %s: level %d | dist %.3f m | centering %s | roll %s',
@@ -361,7 +381,7 @@ class UserTemplate:
             nav = self.__wait_for_nav()
             need = (MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q)
                     + MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q))
-            if self.__elapsed() + need + GO_HOME_RESERVE_S > TIME_LIMIT_S:
+            if self.__elapsed() + GO_HOME_FACTOR * need + GO_HOME_RESERVE_S > TIME_LIMIT_S:
                 rospy.logwarn('[%6.1f s] go home: cp %d needs %.0f s more', self.__elapsed(), cp_id, need)
                 break
             levels[cp_id] = self.__visit(spec)
