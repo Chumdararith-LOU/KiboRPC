@@ -30,9 +30,10 @@ from ib2_msgs.msg import Navigation  # noqa: E402
 import geometry as g  # noqa: E402
 import judge_link  # noqa: E402
 import planner  # noqa: E402
+import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.4 2026-11-21"
+VERSION = "v1.4.1 2026-11-22"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -71,6 +72,8 @@ class UserTemplate:
 
     def __init__(self):
         rospy.init_node('krpc_user')
+        # v1.4.1: logging only. Times when the judge connects to /gs/data.
+        self.__probe = startup_probe.StartupProbe(rospy.get_name())
 
         # Action clients
         self.__command = actionlib.SimpleActionClient('/ctl/command', CtlCommandAction)
@@ -335,6 +338,7 @@ class UserTemplate:
         # The mission clock starts at the start signal, so any waiting below is
         # paid from our own 5-minute budget (the safe assumption).
         self.__t0 = rospy.get_time()
+        self.__probe.mark('start signal')
         started = False
         try:
             # v1.4: get everything ready BEFORE announcing Mission Start (E6).
@@ -342,11 +346,18 @@ class UserTemplate:
                 rospy.logerr('/ctl/command server not available')
             if not self.__checkpoint_client.wait_for_server(rospy.Duration(WAIT_ACTION_S)):
                 rospy.logwarn('/event/checkpoint_passed server not available yet')
+            self.__probe.mark('servers ready')
             course = self.__load_course()
+            self.__probe.mark('course loaded')
             self.__wait_for_judge()
+            self.__probe.mark('gate passed')
             plan = self.__plan(course) if course is not None else None
+            self.__probe.mark('mission_start call')
             res = self.__call_service('/event/mission_start', self.__mission_start)
+            self.__probe.mark('mission_start returned')
             started = True
+            rospy.loginfo('[%6.1f s] %s', self.__elapsed(), self.__probe.summary())
+            self.__probe.stop()
             if res is None:
                 rospy.logerr('mission_start failed; continuing anyway')
             if plan is None:
@@ -373,7 +384,10 @@ class UserTemplate:
                 ready, judge_seen, detail = judge_link.judge_listening(rospy.get_name())
             except Exception as exc:  # introspection unavailable: do not block forever
                 ready, judge_seen, detail = False, False, 'check failed: %s' % exc
+            if judge_seen:
+                self.__probe.mark('judge subscribed')
             if ready:
+                self.__probe.mark('judge connected')
                 rospy.loginfo('[%6.1f s] %s', self.__elapsed(), detail)
                 return True
             limit = JUDGE_WAIT_S if judge_seen else NO_JUDGE_WAIT_S
