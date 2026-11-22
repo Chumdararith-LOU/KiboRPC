@@ -24,6 +24,7 @@ import planner  # noqa: E402
 import scorer  # noqa: E402
 
 QUIET = "--quiet" in sys.argv
+ARRIVAL_ERR = "--err" in sys.argv
 
 
 # ---------------------------------------------------------------------------
@@ -74,12 +75,18 @@ class World(object):
         self.moves = 0                # number of /ctl/command goals so far
         self.abort_plan = {}          # move number (1-based) -> abort after this many s (web W1)
         self.slow_plan = {}           # move number -> time factor (web W2: goal legs 1.10-1.20x)
+        self.arrival_err = False      # --err: the controller misses like on the web (~1 cm, <= 3.5 deg)
         self.hold_s = 1.0             # sim v1.2: the judge holds every report for 1 s
         self.goal_result = None       # (success, reason) from the v1.2 goal rule
         self.aborts = 0
 
     # controller ---------------------------------------------------------
     def start_move(self, p1, q1):
+        if self.arrival_err:
+            e = [max(-0.02, min(0.02, self.rng.gauss(0, 0.008))) for _ in range(3)]
+            p1 = g.v_add(p1, e)
+            axis = [self.rng.gauss(0, 1) for _ in range(3)]
+            q1 = g.q_mul(g.q_from_axis_angle(axis, math.radians(self.rng.uniform(0, 3.5))), q1)
         d = g.distance(self.pos, p1)
         ang = math.radians(g.q_angle_deg(self.q, q1))
         tt = planner.MotionModel.profile_time(d, 0.20, 0.010)
@@ -417,6 +424,7 @@ def run(repo, level, seed, judge_delay=0.0, abort_plan=None, slow_plan=None):
     WORLD.judge_connect_at = 1.0 + judge_delay   # the start signal arrives at t = 1 s
     WORLD.abort_plan = dict(abort_plan or {})
     WORLD.slow_plan = dict(slow_plan or {})
+    WORLD.arrival_err = ARRIVAL_ERR
     install_fakes()
     install_services()
     for mod in ("user_template", "judge_link"):

@@ -161,3 +161,18 @@ def aim_from_here(position, marker_position, target_q):
     delta = wrap_deg(q_twist_deg(q, view) - q_twist_deg(target_q, view))
     fix = q_from_axis_angle(view, -math.radians(delta))
     return q_normalize(q_mul(fix, q))
+
+
+def q_slerp(a, b, f):
+    """Rotation a fraction f of the way from a to b along the shortest arc."""
+    a, b = q_normalize(a), q_normalize(b)
+    d = sum(x * y for x, y in zip(a, b))
+    if d < 0.0:
+        b = [-x for x in b]
+        d = -d
+    if d > 0.9995:
+        return q_normalize([x + f * (y - x) for x, y in zip(a, b)])
+    th = math.acos(min(1.0, d))
+    s0 = math.sin((1.0 - f) * th) / math.sin(th)
+    s1 = math.sin(f * th) / math.sin(th)
+    return q_normalize([s0 * x + s1 * y for x, y in zip(a, b)])

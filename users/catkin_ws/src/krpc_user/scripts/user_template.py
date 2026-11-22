@@ -33,7 +33,7 @@ import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.6 2026-11-22"
+VERSION = "v1.7 2026-11-22"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -54,6 +54,10 @@ MOVE_TIMEOUT_MIN_S = 25.0
 MOVE_TIMEOUT_MAX_S = 100.0  # E2: the 5.3 m goal leg took 57 s; v1's 60 s cap was too tight
 EXTRA_SETTLE_S = 6.0        # extra watching after the controller reports success
 MAX_AIM_FIXES = 1
+EDGE_POS_M = 0.04           # v1.7: stop up to 4 cm short of the CP centre, on the approach side
+EDGE_ANG_DEG = 4.0          # v1.7: and stop each turn up to 4 deg early (web arrival error <= 2.4 cm, 3.5 deg)
+EDGE_CHECK_DIST_FRAC = 0.5  # the commanded pose itself must be within 0.5 x Lv3 radius ...
+EDGE_CHECK_ANG_DEG = 4.5    # ... and centering, roll <= 4.5 deg, or we fall back toward the centre
 MAX_MOVE_RETRIES = 2        # web W1: the controller aborted 4 moves in 3 runs (result 1); resend
 RETRY_PAUSE_S = 0.5         # let the controller finish its stopping profile before resending
 WAIT_SERVICE_S = 10.0
@@ -233,7 +237,7 @@ class UserTemplate:
         timeout = max(MOVE_TIMEOUT_MIN_S, min(MOVE_TIMEOUT_MAX_S, 1.5 * est + 15.0))
         rospy.loginfo('[%6.1f s] -> %s %d: est %.1f s, timeout %.1f s', self.__elapsed(), tag, spec.id, est, timeout)
 
-        self.__send_move(spec.position, spec.target_q)
+        self.__send_move(*self.__edge_target(spec))
         t_start = rospy.get_time()
         move_deadline = t_start + timeout
         settle_deadline = None
@@ -280,7 +284,7 @@ class UserTemplate:
                     timeout = max(MOVE_TIMEOUT_MIN_S, min(MOVE_TIMEOUT_MAX_S, 1.5 * est + 15.0))
                     rospy.logwarn('[%6.1f s] move to %s %d ended with result %d; retry %d (est %.1f s)',
                                   self.__elapsed(), tag, spec.id, result, retries, est)
-                    self.__send_move(spec.position, spec.target_q)
+                    self.__send_move(*self.__edge_target(spec))
                     t_start = rospy.get_time()
                     move_deadline = t_start + timeout
                     hold_since = None
@@ -316,6 +320,35 @@ class UserTemplate:
                 return ev['level']
             self.__log_eval(spec, ev, 'NOT reported')
         return 0
+
+    def __edge_target(self, spec):
+        """v1.7: the pose to command for this checkpoint, from where the robot is now.
+
+        Instead of the exact centre, stop a little short on the approach side and end the
+        turn a little early, while the commanded pose itself stays well inside Lv3 (so the
+        controller's own arrival error still leaves us inside our report margins).
+        """
+        nav = self.__pose()
+        if nav is None:
+            return spec.position, spec.target_q
+        p0, q0 = nav[0], nav[1]
+        r3 = min([t for t, lvl in spec.distance_bands if lvl == 3] or [0.1])
+        a3 = min([t for bands in (spec.centering_bands, spec.roll_bands) for t, lvl in bands if lvl == 3] or [10.0])
+        away = g.distance(p0, spec.position)
+        for frac in (1.0, 0.5, 0.0):
+            shift = min(EDGE_POS_M * frac, away)
+            u = g.v_unit(g.v_sub(p0, spec.position), [0.0, 0.0, 0.0])
+            p_cmd = g.v_add(spec.position, g.v_scale(u, shift))
+            q_aim = g.aim_from_here(p_cmd, spec.marker_position, spec.target_q)
+            turn = g.q_angle_deg(q0, q_aim)
+            early = min(EDGE_ANG_DEG * frac, turn)
+            q_cmd = g.q_slerp(q0, q_aim, 1.0 - early / turn) if turn > 1e-6 else q_aim
+            ev = scorer.evaluate(p_cmd, q_cmd, spec)
+            if (ev['level'] == 3 and ev['distance'] <= EDGE_CHECK_DIST_FRAC * r3
+                    and (ev['centering_deg'] or 0.0) <= min(EDGE_CHECK_ANG_DEG, a3 / 2.0)
+                    and (ev['roll_deg'] or 0.0) <= min(EDGE_CHECK_ANG_DEG, a3 / 2.0)):
+                return p_cmd, q_cmd
+        return spec.position, spec.target_q
 
     def __retry_fits(self, spec, is_goal):
         """v1.5: is there time to fly this leg again (and still get home)?"""
