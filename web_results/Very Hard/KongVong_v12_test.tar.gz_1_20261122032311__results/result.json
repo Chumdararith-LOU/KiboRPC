@@ -1,0 +1,169 @@
+{
+    "Illegal": false,
+    "JudgeReport": {
+        "mission": {
+            "started": true,
+            "finished": true,
+            "start": "19700101 000010424",
+            "finish": "19700101 000420748",
+            "duration_sec": 250.32
+        },
+        "checkpoint_detail": [
+            {
+                "checkpoint_id": 1,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000346002",
+                "reason": "checkpoint validated"
+            },
+            {
+                "checkpoint_id": 2,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000230275",
+                "reason": "checkpoint validated"
+            },
+            {
+                "checkpoint_id": 3,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000204856",
+                "reason": "checkpoint validated"
+            },
+            {
+                "checkpoint_id": 4,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000138390",
+                "reason": "checkpoint validated"
+            },
+            {
+                "checkpoint_id": 5,
+                "success": false,
+                "level": 0,
+                "timestamp": null,
+                "reason": "not attempted"
+            },
+            {
+                "checkpoint_id": 6,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000300719",
+                "reason": "checkpoint validated"
+            },
+            {
+                "checkpoint_id": 7,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000324789",
+                "reason": "checkpoint validated"
+            },
+            {
+                "checkpoint_id": 8,
+                "success": false,
+                "level": 0,
+                "timestamp": null,
+                "reason": "not attempted"
+            },
+            {
+                "checkpoint_id": 9,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000056714",
+                "reason": "checkpoint validated"
+            },
+            {
+                "checkpoint_id": 10,
+                "success": false,
+                "level": 0,
+                "timestamp": null,
+                "reason": "not attempted"
+            },
+            {
+                "checkpoint_id": 11,
+                "success": false,
+                "level": 0,
+                "timestamp": null,
+                "reason": "not attempted"
+            },
+            {
+                "checkpoint_id": 12,
+                "success": true,
+                "level": 3,
+                "timestamp": "19700101 000420737",
+                "reason": "checkpoint validated"
+            }
+        ],
+        "goal": {
+            "success": false,
+            "reason": "checkpoints not passed: 5,8,10,11",
+            "timestamp": "19700101 000420748"
+        },
+        "events": [
+            {
+                "status": "Mission Start",
+                "timestamp": "19700101 000010424"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000056714",
+                "checkpoint_id": 9,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000138390",
+                "checkpoint_id": 4,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000204856",
+                "checkpoint_id": 3,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000230275",
+                "checkpoint_id": 2,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000300719",
+                "checkpoint_id": 6,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000324789",
+                "checkpoint_id": 7,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000346002",
+                "checkpoint_id": 1,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "CheckPointPassed",
+                "timestamp": "19700101 000420737",
+                "checkpoint_id": 12,
+                "success": true,
+                "reason": "checkpoint validated"
+            },
+            {
+                "status": "Mission Finish",
+                "timestamp": "19700101 000420748"
+            }
+        ]
+    }
+}
