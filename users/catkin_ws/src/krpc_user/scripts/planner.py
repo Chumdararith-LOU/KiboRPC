@@ -154,3 +154,72 @@ def plan_route_budget(start, stops, goal, model, time_limit, reserve, pad, t_sta
         last = prev
     order.reverse()
     return [stops[k][0] for k in order] + [goal[0]], -neg_finish
+
+
+def mission_score(n_passed, all_passed, finish_s, cp_points=10.0, goal_bonus=30.0, limit=300.0):
+    """Official web score (decoded 2026-11-22 from three dashboard results):
+    (10 per Lv3 checkpoint + 30 if every checkpoint passed) x (1 + (300 - T) / 300),
+    with T measured from Mission Start."""
+    return (cp_points * n_passed + (goal_bonus if all_passed else 0.0)) * (1.0 + (limit - finish_s) / limit)
+
+
+def plan_route_score(start, stops, goal, model, time_limit, reserve, pad, goal_factor=1.0, t_start=0.0):
+    """v1.8: the subset + order with the highest expected official score.
+
+    Feasibility is the same live "go home" rule as plan_route_budget: a leg to
+    checkpoint c is allowed only if, leaving at time t,
+        t + pad * (time(here -> c) + goal_factor * time(c -> goal)) + reserve <= time_limit
+    and the whole plan must also finish within the limit with that padding.
+    Among feasible plans it maximises mission_score(), counting the goal
+    checkpoint itself (10 pt) and the goal bonus when every stop is in the plan;
+    the expected finish uses the goal-leg factor but no padding.
+    Times are seconds since Mission Start.
+    Returns (ordered keys ending with the goal key, expected finish, expected score).
+    """
+    n = len(stops)
+    nodes = [start] + [(p, q) for _, p, q in stops] + [(goal[1], goal[2])]
+    gi = n + 1
+    c = [[model.move_time(nodes[i][0], nodes[i][1], nodes[j][0], nodes[j][1])
+          for j in range(n + 2)] for i in range(n + 2)]
+    home = [goal_factor * c[i][gi] for i in range(n + 2)]
+
+    def ok(t, i, j):
+        return t + pad * (c[i][j] + home[j]) + reserve <= time_limit
+
+    best = {}
+    for k in range(n):
+        if ok(t_start, 0, k + 1):
+            best[(1 << k, k)] = (t_start + c[0][k + 1], -1)
+    for mask in range(1, 1 << n):
+        for last in range(n):
+            entry = best.get((mask, last))
+            if entry is None:
+                continue
+            t = entry[0]
+            for nxt in range(n):
+                if mask >> nxt & 1 or not ok(t, last + 1, nxt + 1):
+                    continue
+                key = (mask | 1 << nxt, nxt)
+                val = t + c[last + 1][nxt + 1]
+                if key not in best or val < best[key][0]:
+                    best[key] = (val, last)
+    # Straight home is always allowed (the goal must be reported anyway).
+    fin0 = t_start + home[0]
+    choice = (mission_score(1, n == 0, fin0), fin0, 0, -1)
+    for (mask, last), (t, _) in best.items():
+        fin = t + home[last + 1]
+        if t_start + pad * (fin - t_start) + reserve > time_limit:
+            continue
+        cnt = bin(mask).count("1")
+        sc = mission_score(cnt + 1, cnt == n, fin)
+        if sc > choice[0] + 1e-9 or (abs(sc - choice[0]) <= 1e-9 and fin < choice[1]):
+            choice = (sc, fin, mask, last)
+    score, finish, mask, last = choice
+    order = []
+    while last != -1:
+        order.append(last)
+        prev = best[(mask, last)][1]
+        mask ^= 1 << last
+        last = prev
+    order.reverse()
+    return [stops[k][0] for k in order] + [goal[0]], finish, score

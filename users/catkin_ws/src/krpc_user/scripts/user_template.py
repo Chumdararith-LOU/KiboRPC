@@ -33,14 +33,15 @@ import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.7 2026-11-22"
+VERSION = "v1.8 2026-11-22"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
 # ---------------------------------------------------------------------------
-TIME_LIMIT_S = 300.0        # official mission limit
-GO_HOME_RESERVE_S = 15.0    # margin kept when deciding to visit one more checkpoint
-GO_HOME_FACTOR = 1.05       # E1-E5: 39 legs, real/estimate = 0.96 overall, worst leg 1.05
+TIME_LIMIT_S = 300.0        # official mission limit, counted from Mission Start (v1.8; = web scorer)
+GO_HOME_RESERVE_S = 6.0     # v1.8: was 15. Margin kept when deciding to visit one more checkpoint
+GO_HOME_FACTOR = 1.03       # v1.8: was 1.05. Web whole missions ran 0.95-1.03 x the estimate
+GOAL_LEG_FACTOR = 1.15      # v1.8: web goal legs ran 1.10-1.20 x the estimate (5 runs)
 HARD_STOP_S = 285.0         # past this, stop everything and report mission finished
 GOAL_HARD_STOP_S = 294.0    # v1.6: on the goal leg only (web W2-H: goal held at 284.6 s, 0.4 s
                             # before the 285 s stop; goal legs ran 10-20 % over the model)
@@ -360,7 +361,7 @@ class UserTemplate:
         goal = self.__goal_spec
         need = MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q)
         if goal is not None:
-            need += MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q)
+            need += GOAL_LEG_FACTOR * MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q)
         ok = self.__elapsed() + GO_HOME_FACTOR * need + GO_HOME_RESERVE_S <= TIME_LIMIT_S
         if not ok:
             rospy.logwarn('[%6.1f s] no time to retry cp %d (needs %.0f s)', self.__elapsed(), spec.id, need)
@@ -409,8 +410,8 @@ class UserTemplate:
     # Mission flow
     # ------------------------------------------------------------------
     def __run_user_flow(self, msg):
-        # The mission clock starts at the start signal, so any waiting below is
-        # paid from our own 5-minute budget (the safe assumption).
+        # Until Mission Start the clock runs from the start signal (only for the hard stop);
+        # v1.8 restarts it at Mission Start, the official clock.
         self.__t0 = rospy.get_time()
         self.__probe.mark('start signal')
         started = False
@@ -427,6 +428,10 @@ class UserTemplate:
             self.__probe.mark('gate passed')
             plan = self.__plan(course) if course is not None else None
             self.__probe.mark('mission_start call')
+            # v1.8: the official clock (web scorer: Mission Start -> Mission Finish) starts here.
+            rospy.loginfo('[%6.1f s] start-up took %.1f s; mission clock restarts at Mission Start',
+                          self.__elapsed(), self.__elapsed())
+            self.__t0 = rospy.get_time()
             res = self.__call_service('/event/mission_start', self.__mission_start)
             self.__probe.mark('mission_start returned')
             started = True
@@ -494,14 +499,15 @@ class UserTemplate:
         stops, goal = course
         nav = self.__wait_for_nav()
         start = (nav[0], nav[1])
-        # v1.2: plan the best subset that fits the budget, using the same rule as "go home".
-        order, est = planner.plan_route_budget(
+        # v1.8: the subset with the highest expected official score that fits the budget
+        # (same feasibility rule as "go home"), timed from Mission Start, which comes next.
+        order, est, score = planner.plan_route_score(
             start, [(s.id, s.position, s.target_q) for s in stops],
             (goal.id, goal.position, goal.target_q), MODEL,
-            TIME_LIMIT_S, GO_HOME_RESERVE_S, GO_HOME_FACTOR, t_start=self.__elapsed())
+            TIME_LIMIT_S, GO_HOME_RESERVE_S, GO_HOME_FACTOR, GOAL_LEG_FACTOR, t_start=0.0)
         skipped = [s.id for s in stops if s.id not in order]
-        rospy.loginfo('[%6.1f s] route %s, estimated finish %.0f s, planned skips %s',
-                      self.__elapsed(), order, est, skipped)
+        rospy.loginfo('[%6.1f s] route %s, expected finish %.0f s after Mission Start, '
+                      'expected score %.1f, planned skips %s', self.__elapsed(), order, est, score, skipped)
         return stops, goal, order
 
     def __fly_course(self, stops, goal, order):
@@ -513,7 +519,7 @@ class UserTemplate:
             spec = by_id[cp_id]
             nav = self.__wait_for_nav()
             need = (MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q)
-                    + MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q))
+                    + GOAL_LEG_FACTOR * MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q))
             if self.__elapsed() + GO_HOME_FACTOR * need + GO_HOME_RESERVE_S > TIME_LIMIT_S:
                 rospy.logwarn('[%6.1f s] go home: cp %d needs %.0f s more', self.__elapsed(), cp_id, need)
                 break
