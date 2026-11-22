@@ -1,0 +1,57 @@
+[rosout][INFO] 2026-11-21 18:31:41,579: krpc_user v1.4.1 2026-11-22 ready
+[rosout][INFO] 2026-11-21 18:31:48,741: start id: 0
+[rosout][INFO] 2026-11-21 18:31:48,757: /mission/get_checkpoints -> success=True message={"checkpoint_count": 12, "checkpoints": [{"checkpoint_id": 1, "position": [1.3725461014581537, -0.5072611141879235, 0.6887791466935802], "marker_pose": {"position": [1.451, -1.001, 0.6806], "quaternio...
+[rosout][INFO] 2026-11-21 18:31:48,760: course: 11 checkpoints + goal 12
+[rosout][INFO] 2026-11-21 18:31:53,797: [   1.8 s] judge connected: ['/kibo_rpc_judge']
+[rosout][INFO] 2026-11-21 18:31:53,871: [   1.8 s] route [1, 7, 6, 2, 3, 4, 8, 9, 12], estimated finish 270 s, planned skips [5, 10, 11]
+[rosout][INFO] 2026-11-21 18:31:53,915: /event/mission_start -> success=True message=accepted
+[rosout][INFO] 2026-11-21 18:31:53,917: [   1.8 s] startup timeline (s from start signal): node launch -8.7, judge subscribed -2.4, judge connected -0.1, start signal +0.0, servers ready +0.0, course loaded +0.0, gate passed +1.8, mission_start call +1.8, mission_start returned +1.8 | wall/ros 1.19 | polls 5, errors 0 | first check: judge not connected yet: ['/kibo_rpc_judge'] | last check: judge connected: ['/kibo_rpc_judge']
+[rosout][INFO] 2026-11-21 18:31:53,918: [   1.8 s] -> checkpoint 1: est 30.8 s, timeout 61.3 s
+[rosout][INFO] 2026-11-21 18:31:53,943: [   1.8 s] move result 1 after 0.0 s
+[rosout][INFO] 2026-11-21 18:32:11,785: [   7.8 s] cp 1 NOT reported: level 0 | dist 1.456 m | centering 45.0 deg | roll 65.8 deg
+[rosout][INFO] 2026-11-21 18:32:11,787: [   7.8 s] -> checkpoint 7: est 30.0 s, timeout 60.0 s
+[rosout][INFO] 2026-11-21 18:33:37,834: [  37.5 s] cp 7 Lv3 held: level 3 | dist 0.009 m | centering 1.7 deg | roll 0.1 deg
+[rosout][INFO] 2026-11-21 18:33:44,873: [  40.2 s] reported cp 7: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:33:44,876: [  40.2 s] -> checkpoint 6: est 20.8 s, timeout 46.2 s
+[rosout][INFO] 2026-11-21 18:34:49,901: [  62.3 s] move result 0 after 22.1 s
+[rosout][INFO] 2026-11-21 18:34:50,030: [  62.3 s] cp 6 Lv3 held: level 3 | dist 0.007 m | centering 2.8 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-21 18:34:52,086: [  63.0 s] reported cp 6: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:34:52,088: [  63.0 s] -> checkpoint 2: est 29.2 s, timeout 58.8 s
+[rosout][INFO] 2026-11-21 18:36:28,942: [  94.0 s] cp 2 Lv3 held: level 3 | dist 0.010 m | centering 2.6 deg | roll 1.2 deg
+[rosout][INFO] 2026-11-21 18:36:30,976: [  94.7 s] reported cp 2: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:36:30,979: [  94.7 s] -> checkpoint 3: est 11.0 s, timeout 31.5 s
+[rosout][INFO] 2026-11-21 18:36:49,864: [ 100.8 s] move result 0 after 6.1 s
+[rosout][INFO] 2026-11-21 18:37:07,192: [ 106.9 s] cp 3 aim fix 1: level 3 | dist 0.027 m | centering 2.1 deg | roll 0.9 deg
+[rosout][INFO] 2026-11-21 18:37:44,201: [ 118.5 s] move result 0 after 23.8 s
+[rosout][INFO] 2026-11-21 18:37:44,429: [ 118.6 s] cp 3 Lv3 held: level 3 | dist 0.015 m | centering 1.6 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-21 18:37:46,471: [ 119.5 s] reported cp 3: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:37:46,474: [ 119.5 s] -> checkpoint 4: est 28.1 s, timeout 57.1 s
+[rosout][INFO] 2026-11-21 18:39:09,911: [ 147.0 s] move result 0 after 27.5 s
+[rosout][INFO] 2026-11-21 18:39:10,500: [ 147.2 s] cp 4 Lv3 held: level 3 | dist 0.009 m | centering 1.1 deg | roll 1.5 deg
+[rosout][INFO] 2026-11-21 18:39:12,550: [ 147.9 s] reported cp 4: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:39:12,552: [ 147.9 s] -> checkpoint 8: est 27.8 s, timeout 56.7 s
+[rosout][INFO] 2026-11-21 18:40:36,061: [ 176.4 s] move result 0 after 28.5 s
+[rosout][INFO] 2026-11-21 18:40:36,167: [ 176.5 s] cp 8 Lv3 held: level 3 | dist 0.009 m | centering 3.2 deg | roll 1.1 deg
+[rosout][INFO] 2026-11-21 18:40:38,214: [ 177.3 s] reported cp 8: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:40:38,216: [ 177.3 s] -> checkpoint 9: est 43.9 s, timeout 80.8 s
+[rosout][INFO] 2026-11-21 18:43:04,057: [ 225.2 s] move result 0 after 47.9 s
+[rosout][INFO] 2026-11-21 18:43:04,534: [ 225.4 s] cp 9 Lv3 held: level 3 | dist 0.011 m | centering 0.9 deg | roll 1.4 deg
+[rosout][INFO] 2026-11-21 18:43:06,597: [ 226.2 s] reported cp 9: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:43:06,599: [ 226.2 s] -> goal 12: est 34.0 s, timeout 66.0 s
+[rosout][INFO] 2026-11-21 18:44:56,238: [ 261.8 s] move result 0 after 35.6 s
+[rosout][INFO] 2026-11-21 18:45:01,406: [ 263.7 s] cp 12 Lv3 held: level 3 | dist 0.013 m | centering 1.4 deg | roll 2.8 deg
+[rosout][INFO] 2026-11-21 18:45:03,451: [ 264.5 s] reported cp 12: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-21 18:45:03,456: [ 264.5 s] levels {1: 0, 7: 3, 6: 3, 2: 3, 3: 3, 4: 3, 8: 3, 9: 3, 12: 3}
+[rosout][INFO] 2026-11-21 18:45:03,500: /event/mission_finished -> success=True message=accepted
+[rosout][INFO] 2026-11-21 18:45:03,502: [ 264.5 s] mission finished sent
+[rosout][INFO] 2026-11-21 18:45:07,452: finish processing
+shutdown request: user request
+[krpc_user-2] process has finished cleanly
