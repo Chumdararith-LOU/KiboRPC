@@ -1,0 +1,57 @@
+[rosout][INFO] 2026-11-22 04:20:16,763: krpc_user v1.6 2026-11-22 ready
+[rosout][INFO] 2026-11-22 04:20:23,264: start id: 0
+[rosout][INFO] 2026-11-22 04:20:28,298: /mission/get_checkpoints -> success=True message={"checkpoint_count": 10, "checkpoints": [{"checkpoint_id": 1, "position": [1.4964164478311122, -0.5042443381344427, 0.7148221955887707], "marker_pose": {"position": [1.451, -1.001, 0.6806], "quaternio...
+[rosout][INFO] 2026-11-22 04:20:28,300: course json: {"checkpoint_count": 10, "checkpoints": [{"checkpoint_id": 1, "position": [1.4964164478311122, -0.5042443381344427, 0.7148221955887707], "marker_pose": {"position": [1.451, -1.001, 0.6806], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.2163265814085786, 0.18832135900345948, 0.7141088947591973, -0.6385815236482854], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 2, "position": [2.9094657500521572, -0.5079091778835738, 0.6644507739650687], "marker_pose": {"position": [2.973, -1.001, 0.7176], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.6698108338911736, -0.5541146754070134, 0.35975363313069897, -0.338950876602869], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 3, "position": [3.2688413367103357, -0.5103212990832902, 0.6079488425414201], "marker_pose": {"position": [3.313, -1.001, 0.5226], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.7134677727000955, -0.6139537239573477, -0.2808952857369461, 0.1874097132168697], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 4, "position": [4.267183691504507, -0.5100402477133138, 0.48347337283573055], "marker_pose": {"position": [4.181, -1.001, 0.5226], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.5174122740240854, 0.6500082815679399, 0.40456510650030253, -0.3822314052831317], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 5, "position": [5.88161705702622, -0.5317768493725968, 0.7212233628632455], "marker_pose": {"position": [5.754, -1.001, 0.8376], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.000589741280247455, 0.1914518967422415, 0.768741327274668, -0.6102315914298458], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 6, "position": [1.7677996814658543, -0.37617188865545953, 0.2658907698362637], "marker_pose": {"position": [1.895, -0.282, -0.2084], "quaternion": [0.0, 0.0, 0.7071068, 0.7071068]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.34371941115595983, 0.4879293766243489, 0.3670485048230393, 0.71348250499136], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 7, "position": [1.4646189043634559, -0.5077945509673139, 0.45261179227992426], "marker_pose": {"position": [1.451, -1.001, 0.3716], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.3618123811423879, 0.26758308371263495, 0.664844491346881, -0.5962154782363669], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 10, "position": [5.908711860687905, 0.05314633406817817, 1.3888195082742074], "marker_pose": {"position": [5.851, 0.01, 1.8836], "quaternion": [0.0, 1.0, 0.0, 0.0]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.2708305288934661, -0.7059125027987369, 0.2437199193343222, 0.6074034605856146], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 11, "position": [6.703464037625669, 0.3744686456390234, 1.138710683466391], "marker_pose": {"position": [7.195, 0.363, 1.2296], "quaternion": [-0.5, 0.5, 0.5, -0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.6408923291411199, -0.06244491296091195, -0.06756234506715221, 0.7620977527997322], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 12, "position": [0.48515669455686594, -0.07034922815970096, 0.017991763617096965], "marker_pose": {"position": [0.0, -0.059, -0.1024], "quaternion": [-0.5, 0.5, -0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.06581398443223269, 0.8819037861819357, -0.45541454354778, 0.10252719100944838], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}], "goalpoint_id": 12}
+[rosout][INFO] 2026-11-22 04:20:28,307: course: 9 checkpoints + goal 12
+[rosout][INFO] 2026-11-22 04:20:28,340: [   1.8 s] judge connected: ['/kibo_rpc_judge']
+[rosout][INFO] 2026-11-22 04:20:28,366: [   1.8 s] route [1, 7, 6, 2, 3, 4, 5, 10, 12], estimated finish 279 s, planned skips [11]
+[rosout][INFO] 2026-11-22 04:20:28,427: /event/mission_start -> success=True message=accepted
+[rosout][INFO] 2026-11-22 04:20:28,431: [   1.8 s] startup timeline (s from start signal): node launch -8.4, judge subscribed -0.5, judge connected -0.5, start signal +0.0, servers ready +0.0, course loaded +1.8, gate passed +1.8, mission_start call +1.8, mission_start returned +1.8 | wall/ros 1.15 | polls 4, errors 0 | first check: judge connected: ['/kibo_rpc_judge'] | last check: judge connected: ['/kibo_rpc_judge']
+[rosout][INFO] 2026-11-22 04:20:28,433: [   1.9 s] -> checkpoint 1: est 31.4 s, timeout 62.2 s
+[rosout][INFO] 2026-11-22 04:20:28,568: [   1.9 s] move result 1 after 0.0 s
+[rosout][WARN] 2026-11-22 04:20:30,029: [   2.4 s] move to checkpoint 1 ended with result 1; retry 1 (est 31.4 s)
+[rosout][INFO] 2026-11-22 04:22:02,641: [  36.5 s] cp 1 Lv3 held: level 3 | dist 0.009 m | centering 2.0 deg | roll 1.6 deg
+[rosout][INFO] 2026-11-22 04:22:04,687: [  37.3 s] reported cp 1: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-22 04:22:04,690: [  37.3 s] -> checkpoint 7: est 13.0 s, timeout 34.5 s
+[rosout][INFO] 2026-11-22 04:22:40,545: [  50.2 s] move result 0 after 12.9 s
+[rosout][INFO] 2026-11-22 04:22:54,568: [  55.8 s] cp 7 Lv3 held: level 3 | dist 0.017 m | centering 1.9 deg | roll 0.1 deg
+[rosout][INFO] 2026-11-22 04:23:01,627: [  58.5 s] reported cp 7: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-22 04:23:01,630: [  58.5 s] -> checkpoint 6: est 21.5 s, timeout 47.3 s
+[rosout][INFO] 2026-11-22 04:24:00,195: [  80.5 s] move result 0 after 22.0 s
+[rosout][INFO] 2026-11-22 04:24:00,649: [  80.7 s] cp 6 Lv3 held: level 3 | dist 0.010 m | centering 2.0 deg | roll 2.0 deg
+[rosout][INFO] 2026-11-22 04:24:02,679: [  81.6 s] reported cp 6: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-22 04:24:02,681: [  81.6 s] -> checkpoint 2: est 28.6 s, timeout 58.0 s
+[rosout][INFO] 2026-11-22 04:25:23,192: [ 112.1 s] move result 0 after 30.5 s
+[rosout][INFO] 2026-11-22 04:25:23,326: [ 112.2 s] cp 2 Lv3 held: level 3 | dist 0.009 m | centering 2.0 deg | roll 1.9 deg
+[rosout][INFO] 2026-11-22 04:25:25,373: [ 113.0 s] reported cp 2: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-22 04:25:25,375: [ 113.0 s] -> checkpoint 3: est 18.3 s, timeout 42.5 s
+[rosout][INFO] 2026-11-22 04:26:21,506: [ 133.4 s] move result 0 after 20.4 s
+[rosout][INFO] 2026-11-22 04:26:21,746: [ 133.5 s] cp 3 Lv3 held: level 3 | dist 0.011 m | centering 1.2 deg | roll 1.1 deg
+[rosout][INFO] 2026-11-22 04:26:23,783: [ 134.3 s] reported cp 3: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-22 04:26:23,786: [ 134.3 s] -> checkpoint 4: est 23.6 s, timeout 50.4 s
+[rosout][INFO] 2026-11-22 04:27:31,096: [ 159.8 s] move result 0 after 25.4 s
+[rosout][INFO] 2026-11-22 04:27:32,256: [ 160.2 s] cp 4 Lv3 held: level 3 | dist 0.012 m | centering 0.7 deg | roll 1.0 deg
+[rosout][INFO] 2026-11-22 04:27:34,307: [ 161.2 s] reported cp 4: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-22 04:27:34,309: [ 161.2 s] -> checkpoint 5: est 31.7 s, timeout 62.6 s
+[rosout][INFO] 2026-11-22 04:29:02,080: [ 193.4 s] move result 0 after 32.2 s
+[rosout][INFO] 2026-11-22 04:29:02,300: [ 193.5 s] cp 5 Lv3 held: level 3 | dist 0.008 m | centering 0.7 deg | roll 1.3 deg
+[rosout][INFO] 2026-11-22 04:29:04,363: [ 194.4 s] reported cp 5: success: True
+message: "checkpoint accepted: band=3"
+[rosout][WARN] 2026-11-22 04:29:04,365: [ 194.4 s] go home: cp 10 needs 87 s more
+[rosout][INFO] 2026-11-22 04:29:04,367: [ 194.4 s] -> goal 12: est 55.8 s, timeout 98.7 s
+[rosout][INFO] 2026-11-22 04:31:44,299: [ 251.4 s] move result 0 after 57.1 s
+[rosout][INFO] 2026-11-22 04:31:44,519: [ 251.5 s] cp 12 Lv3 held: level 3 | dist 0.007 m | centering 0.8 deg | roll 0.8 deg
+[rosout][INFO] 2026-11-22 04:31:46,575: [ 252.4 s] reported cp 12: success: True
+message: "checkpoint accepted: band=3"
+[rosout][INFO] 2026-11-22 04:31:46,577: [ 252.4 s] levels {1: 3, 7: 3, 6: 3, 2: 3, 3: 3, 4: 3, 5: 3, 12: 3}
+[rosout][INFO] 2026-11-22 04:31:46,603: /event/mission_finished -> success=True message=accepted
+[rosout][INFO] 2026-11-22 04:31:46,605: [ 252.4 s] mission finished sent
+[rosout][INFO] 2026-11-22 04:31:55,227: finish processing
+shutdown request: user request
+[krpc_user-2] process has finished cleanly
