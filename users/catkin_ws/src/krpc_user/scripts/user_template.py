@@ -33,7 +33,7 @@ import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.4.1 2026-11-22"
+VERSION = "v1.6 2026-11-22"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -42,6 +42,8 @@ TIME_LIMIT_S = 300.0        # official mission limit
 GO_HOME_RESERVE_S = 15.0    # margin kept when deciding to visit one more checkpoint
 GO_HOME_FACTOR = 1.05       # E1-E5: 39 legs, real/estimate = 0.96 overall, worst leg 1.05
 HARD_STOP_S = 285.0         # past this, stop everything and report mission finished
+GOAL_HARD_STOP_S = 294.0    # v1.6: on the goal leg only (web W2-H: goal held at 284.6 s, 0.4 s
+                            # before the 285 s stop; goal legs ran 10-20 % over the model)
 HOLD_S = 1.0                # Lv3 + still must hold this long before reporting
 STILL_WINDOW_S = 0.5        # stillness is measured from pose change over this window,
 STILL_SPEED = 0.03          # m/s    not from nav twist (sim adds ~7 mm/s velocity bias)
@@ -52,6 +54,8 @@ MOVE_TIMEOUT_MIN_S = 25.0
 MOVE_TIMEOUT_MAX_S = 100.0  # E2: the 5.3 m goal leg took 57 s; v1's 60 s cap was too tight
 EXTRA_SETTLE_S = 6.0        # extra watching after the controller reports success
 MAX_AIM_FIXES = 1
+MAX_MOVE_RETRIES = 2        # web W1: the controller aborted 4 moves in 3 runs (result 1); resend
+RETRY_PAUSE_S = 0.5         # let the controller finish its stopping profile before resending
 WAIT_SERVICE_S = 10.0
 WAIT_ACTION_S = 10.0
 CANCEL_WAIT_S = 10.0
@@ -102,6 +106,8 @@ class UserTemplate:
         self.__stop_requested = False
         self.__t0 = None
         self.__finished_sent = False
+        self.__goal_spec = None
+        self.__hard_stop = HARD_STOP_S
         rospy.set_param('/ib2_user/ready', True) # DO NOT REMOVE THIS LINE
         rospy.loginfo('krpc_user %s ready', VERSION)
 
@@ -153,7 +159,7 @@ class UserTemplate:
             raise MissionAbort('ROS shutdown')
         if self.__stop_requested:
             raise MissionAbort('stop requested')
-        if self.__elapsed() > HARD_STOP_S:
+        if self.__elapsed() > self.__hard_stop:
             raise MissionAbort('hard stop at %.1f s' % self.__elapsed())
 
     def __call_service(self, name, proxy, retries=3):
@@ -234,6 +240,7 @@ class UserTemplate:
         hold_since = None
         best = None
         aim_fixes = 0
+        retries = 0
         rate = rospy.Rate(LOOP_HZ)
 
         while True:
@@ -260,6 +267,24 @@ class UserTemplate:
             result = self.__action_done()
             if result is not None and settle_deadline is None:
                 rospy.loginfo('[%6.1f s] move result %d after %.1f s', self.__elapsed(), result, now - t_start)
+                if (result != CtlCommandResult.TERMINATE_SUCCESS and retries < MAX_MOVE_RETRIES
+                        and self.__retry_fits(spec, is_goal)):
+                    # v1.5: the move ended without success (web W1: aborted at once on the
+                    # first move, and mid-flight on a goal leg). Send the same target again.
+                    retries += 1
+                    rospy.sleep(RETRY_PAUSE_S)
+                    self.__check_abort()
+                    nav = self.__pose()
+                    est = (MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q, include_settle=False)
+                           if nav else 40.0)
+                    timeout = max(MOVE_TIMEOUT_MIN_S, min(MOVE_TIMEOUT_MAX_S, 1.5 * est + 15.0))
+                    rospy.logwarn('[%6.1f s] move to %s %d ended with result %d; retry %d (est %.1f s)',
+                                  self.__elapsed(), tag, spec.id, result, retries, est)
+                    self.__send_move(spec.position, spec.target_q)
+                    t_start = rospy.get_time()
+                    move_deadline = t_start + timeout
+                    hold_since = None
+                    continue
                 settle_deadline = now + EXTRA_SETTLE_S
 
             if settle_deadline is not None and now > settle_deadline:
@@ -291,6 +316,22 @@ class UserTemplate:
                 return ev['level']
             self.__log_eval(spec, ev, 'NOT reported')
         return 0
+
+    def __retry_fits(self, spec, is_goal):
+        """v1.5: is there time to fly this leg again (and still get home)?"""
+        nav = self.__pose()
+        if nav is None:
+            return False
+        if is_goal:
+            return True          # always try for the goal; the hard stop still applies
+        goal = self.__goal_spec
+        need = MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q)
+        if goal is not None:
+            need += MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q)
+        ok = self.__elapsed() + GO_HOME_FACTOR * need + GO_HOME_RESERVE_S <= TIME_LIMIT_S
+        if not ok:
+            rospy.logwarn('[%6.1f s] no time to retry cp %d (needs %.0f s)', self.__elapsed(), spec.id, need)
+        return ok
 
     @staticmethod
     def __safe_lv3(ev, spec):
@@ -403,6 +444,7 @@ class UserTemplate:
         if res is None or not res.success:
             rospy.logerr('no checkpoints')
             return None
+        rospy.loginfo('course json: %s', res.message)
         data = json.loads(res.message)
         cps = data.get('checkpoints', data.get('Checkpoints', []))
         specs = [scorer.CheckpointSpec(cp) for cp in cps]
@@ -431,6 +473,7 @@ class UserTemplate:
 
     def __fly_course(self, stops, goal, order):
         by_id = dict((s.id, s) for s in stops)
+        self.__goal_spec = goal
         levels = {}
         for cp_id in order[:-1]:
             self.__check_abort()
@@ -442,6 +485,7 @@ class UserTemplate:
                 rospy.logwarn('[%6.1f s] go home: cp %d needs %.0f s more', self.__elapsed(), cp_id, need)
                 break
             levels[cp_id] = self.__visit(spec)
+        self.__hard_stop = GOAL_HARD_STOP_S     # v1.6: let a late goal leg finish
         levels[goal.id] = self.__visit(goal, is_goal=True)
         rospy.loginfo('[%6.1f s] levels %s', self.__elapsed(), levels)
 

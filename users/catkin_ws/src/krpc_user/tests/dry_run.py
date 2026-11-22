@@ -12,6 +12,7 @@ import math
 import os
 import random
 import sys
+import time
 import types
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -68,16 +69,29 @@ class World(object):
         self.mission_finish = None
         self.shutdown = False
         self.max_t = 600.0
+        self.judge_connect_at = 0.0   # E6 race: the judge hears /gs/data only after this
+        self.lost_start = False
+        self.moves = 0                # number of /ctl/command goals so far
+        self.abort_plan = {}          # move number (1-based) -> abort after this many s (web W1)
+        self.slow_plan = {}           # move number -> time factor (web W2: goal legs 1.10-1.20x)
+        self.hold_s = 1.0             # sim v1.2: the judge holds every report for 1 s
+        self.goal_result = None       # (success, reason) from the v1.2 goal rule
+        self.aborts = 0
 
     # controller ---------------------------------------------------------
     def start_move(self, p1, q1):
         d = g.distance(self.pos, p1)
         ang = math.radians(g.q_angle_deg(self.q, q1))
-        tt = planner.MotionModel.profile_time(d, 0.20, 0.0142)
-        tr = planner.MotionModel.profile_time(ang, 0.436, 0.15)
+        tt = planner.MotionModel.profile_time(d, 0.20, 0.010)
+        tr = planner.MotionModel.profile_time(ang, 0.436, 0.18)
         self.goal = dict(p0=list(self.pos), q0=list(self.q), p1=list(p1), q1=g.q_normalize(q1),
                          t0=self.t, tt=tt, gap=1.7 if ang > 0.01 else 0.0, tr=tr, inside_since=None)
         self.result = None
+        self.moves += 1
+        self.goal["abort_after"] = self.abort_plan.get(self.moves)
+        f = self.slow_plan.get(self.moves, 1.0)
+        self.goal["tt"] *= f
+        self.goal["tr"] *= f
 
     def cancel_move(self):
         if self.goal is not None:
@@ -96,6 +110,11 @@ class World(object):
     def _tick(self):
         old_p, old_q = list(self.pos), list(self.q)
         gl = self.goal
+        if gl is not None and gl.get("abort_after") is not None and self.t - gl["t0"] >= gl["abort_after"]:
+            self.goal = None
+            self.result = 1          # TERMINATE_ABORTED (web W1: collision detector)
+            self.aborts += 1
+            gl = None
         if gl is not None:
             s = self.t - gl["t0"]
             if s < gl["tt"]:
@@ -139,16 +158,31 @@ class World(object):
                                  angular=Msg(x=self.wvel[0], y=self.wvel[1], z=self.wvel[2]))))
 
     # judge -------------------------------------------------------------
+    def hold_level(self, spec):
+        """Sim v1.2: sample the pose for hold_s (about 30 Hz); the lowest level counts."""
+        end = self.t + self.hold_s
+        worst = 3
+        while self.t < end and not self.shutdown:
+            worst = min(worst, scorer.evaluate(self.pos, self.q, spec)["level"])
+            self.step(1.0 / 30.0)
+        return worst
+
     def judge_report(self, cp_id):
-        if self.mission_start is None or self.mission_finish is not None:
-            return
+        """Returns (success, message) like sim v1.2's evaluate_checkpoint."""
+        if self.mission_start is None:
+            return False, "mission not started"
+        if self.mission_finish is not None:
+            return False, "mission already finished"
         if cp_id in self.reports:
-            return
+            return False, "checkpoint already passed: %d" % cp_id
         spec = self.specs.get(cp_id)
         if spec is None:
-            return
-        ev = scorer.evaluate(self.pos, self.q, spec)
-        self.reports[cp_id] = (self.t - self.mission_start, ev["level"])
+            return False, "unknown checkpoint_id: %d" % cp_id
+        level = self.hold_level(spec)
+        if level <= 0:
+            return False, "checkpoint left outermost margin"
+        self.reports[cp_id] = (self.t - self.mission_start, level)
+        return True, "checkpoint accepted: band=%d" % level
 
 
 def slerp(a, b, f):
@@ -209,6 +243,17 @@ def install_fakes():
         return call
 
     rospy.ROSException = ROSException
+    class ROSInterruptException(Exception):
+        pass
+    rospy.ROSInterruptException = ROSInterruptException
+
+    def ros_sleep(_s):
+        # Background threads (startup probe) poll in real time; they never
+        # advance the fake clock, which only the main flow steps.
+        if WORLD.shutdown:
+            raise ROSInterruptException()
+        time.sleep(0.002)
+    rospy.sleep = ros_sleep
     rospy.Duration = Duration
     rospy.Time = Time
     rospy.Rate = Rate
@@ -244,8 +289,8 @@ def install_fakes():
                 o = goal.target.pose.orientation
                 WORLD.start_move([p.x, p.y, p.z], [o.x, o.y, o.z, o.w])
             else:
-                WORLD.judge_report(goal.checkpoint_id)
-                self.cp_result = Msg(success=True, message="accepted")
+                ok, message = WORLD.judge_report(goal.checkpoint_id)
+                self.cp_result = Msg(success=ok, message=message)
 
         def _done(self):
             return WORLD.result is not None if self.name == "/ctl/command" else True
@@ -270,6 +315,34 @@ def install_fakes():
                 WORLD.cancel_move()
 
     actionlib.SimpleActionClient = SimpleActionClient
+
+    rosgraph = types.ModuleType("rosgraph")
+
+    class Master(object):
+        def __init__(self, caller):
+            pass
+
+        def getSystemState(self):
+            return ([], [["/gs/data", ["/krpc_flight_recorder", "/kibo_rpc_judge"]]], [])
+
+        def lookupNode(self, name):
+            return "http://fake-api:1"
+    rosgraph.Master = Master
+    sys.modules["rosgraph"] = rosgraph
+
+    import xmlrpc.client
+
+    class FakeProxy(object):
+        def __init__(self, uri):
+            pass
+
+        def getBusInfo(self, caller):
+            bus = [[1, "/krpc_flight_recorder", "o", "TCPROS", "/gs/data", True]]
+            if WORLD.t >= WORLD.judge_connect_at:
+                bus.append([2, "/kibo_rpc_judge", "o", "TCPROS", "/gs/data", True])
+            return 1, "bus info", bus
+    xmlrpc.client.ServerProxy = FakeProxy
+    rospy.get_name = lambda: "/krpc_user"
     sys.modules["actionlib"] = actionlib
 
     def pkg(name, **attrs):
@@ -308,16 +381,26 @@ def install_fakes():
 
 def install_services():
     def start():
-        WORLD.mission_start = WORLD.t
+        if WORLD.t < WORLD.judge_connect_at:
+            WORLD.lost_start = True      # published before the judge connected: lost
+        elif WORLD.mission_start is None:
+            WORLD.mission_start = WORLD.t
         return Msg(success=True, message="accepted")
 
     def finish():
+        if WORLD.mission_start is None:
+            return Msg(success=True, message="accepted")   # judge ignores it
         WORLD.mission_finish = WORLD.t
         gid = WORLD.payload["goalpoint_id"]
-        if gid not in WORLD.reports:
-            ev = scorer.evaluate(WORLD.pos, WORLD.q, WORLD.specs[gid])
-            if ev["level"] > 0:
-                WORLD.reports[gid] = (WORLD.t - WORLD.mission_start, ev["level"])
+        level = WORLD.hold_level(WORLD.specs[gid])     # sim v1.2: 1 s hold at finish
+        missing = [c["checkpoint_id"] for c in WORLD.payload["checkpoints"]
+                   if c["checkpoint_id"] not in WORLD.reports]
+        if level <= 0:
+            WORLD.goal_result = (False, "checkpoint left outermost margin")
+        elif missing:
+            WORLD.goal_result = (False, "checkpoints not passed: %s" % ",".join(str(m) for m in missing))
+        else:
+            WORLD.goal_result = (True, "checkpoint validated")
         return Msg(success=True, message="accepted")
 
     WORLD.services["/event/mission_start"] = start
@@ -325,22 +408,27 @@ def install_services():
     WORLD.services["/mission/get_checkpoints"] = lambda: Msg(success=True, message=json.dumps(WORLD.payload))
 
 
-def run(repo, level, seed):
+def run(repo, level, seed, judge_delay=0.0, abort_plan=None, slow_plan=None):
     global WORLD
     sys.argv = [sys.argv[0], repo]
     import test_offline as T
     _, payload = T.make_course(level, seed)
     WORLD = World(payload, seed)
+    WORLD.judge_connect_at = 1.0 + judge_delay   # the start signal arrives at t = 1 s
+    WORLD.abort_plan = dict(abort_plan or {})
+    WORLD.slow_plan = dict(slow_plan or {})
     install_fakes()
     install_services()
-    for mod in ("user_template",):
+    for mod in ("user_template", "judge_link"):
         sys.modules.pop(mod, None)
     import user_template
     node = user_template.UserTemplate()
     node.run()
     dur = (WORLD.mission_finish - WORLD.mission_start) if WORLD.mission_finish else None
     levels = [WORLD.reports.get(c["checkpoint_id"], (None, 0))[1] for c in payload["checkpoints"]]
-    goal_ok = payload["goalpoint_id"] in WORLD.reports
+    goal_ok = WORLD.goal_result if WORLD.goal_result else (False, "no mission_finished")
+    if WORLD.lost_start and WORLD.mission_start is None:
+        print("JUDGE MISSED MISSION START: run scores nothing")
     return dur, levels, goal_ok
 
 
@@ -349,6 +437,16 @@ if __name__ == "__main__":
     repo = args[0] if args else os.path.expanduser("~/chumdararith-lou/kiborpc")
     level = args[1] if len(args) > 1 else "normal"
     seed = int(args[2]) if len(args) > 2 else 1
-    dur, levels, goal_ok = run(repo, level, seed)
-    print("RESULT level=%s seed=%d duration=%s levels=%s goal=%s" % (
-        level, seed, "%.1f" % dur if dur else None, levels, goal_ok))
+    delay = float(args[3]) if len(args) > 3 else 0.0
+    # --abort=1:0,7:20  -> abort move 1 at once and move 7 after 20 s (web W1 pattern)
+    # --slow=8:1.3      -> move 8 takes 1.3x longer (web W2 goal legs)
+    plan, slow = {}, {}
+    for a in sys.argv[1:]:
+        for flag, target in (("--abort=", plan), ("--slow=", slow)):
+            if a.startswith(flag):
+                for item in a[len(flag):].split(","):
+                    k, v = item.split(":")
+                    target[int(k)] = float(v)
+    dur, levels, goal_ok = run(repo, level, seed, delay, plan, slow)
+    print("RESULT level=%s seed=%d duration=%s levels=%s goal=%s aborts=%d" % (
+        level, seed, "%.1f" % dur if dur else None, levels, goal_ok, WORLD.aborts))

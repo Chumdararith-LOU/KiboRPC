@@ -33,10 +33,12 @@ WORK = "/tmp/kibo_offline_courses"
 # ---------------------------------------------------------------------------
 def load_referee_class():
     for name in ("rospy", "tf", "requests", "geometry_msgs", "geometry_msgs.msg",
-                 "std_msgs", "std_msgs.msg", "ib2_msgs", "ib2_msgs.msg"):
+                 "std_msgs", "std_msgs.msg", "ib2_msgs", "ib2_msgs.msg",
+                 "krpc_msgs", "krpc_msgs.srv"):
         sys.modules.setdefault(name, types.ModuleType(name))
     for mod, attrs in (("geometry_msgs.msg", ["Pose"]), ("std_msgs.msg", ["Bool", "String"]),
-                       ("ib2_msgs.msg", ["Navigation"])):
+                       ("ib2_msgs.msg", ["Navigation"]),
+                       ("krpc_msgs.srv", ["EvaluateCheckpoint", "EvaluateCheckpointResponse"])):
         for a in attrs:
             setattr(sys.modules[mod], a, type(a, (), {}))
     class _T(object):
