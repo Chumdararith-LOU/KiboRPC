@@ -1,0 +1,574 @@
+{
+    "Level": "normal",
+    "Checkpoints": [
+        {
+            "checkpoint_id": 1,
+            "position": [
+                1.4988822348842938,
+                -0.5224617511483963,
+                0.8173787847896231
+            ],
+            "marker_pose": {
+                "position": [
+                    1.451,
+                    -1.001,
+                    0.6806
+                ],
+                "quaternion": [
+                    -0.5,
+                    0.5,
+                    0.5,
+                    0.5
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    -0.6268112168083241,
+                    0.5898159538064954,
+                    0.44721289730913144,
+                    -0.24336282295982353
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        },
+        {
+            "checkpoint_id": 2,
+            "position": [
+                2.8489668008168025,
+                -0.529915769581511,
+                0.8302739248956981
+            ],
+            "marker_pose": {
+                "position": [
+                    2.973,
+                    -1.001,
+                    0.7176
+                ],
+                "quaternion": [
+                    -0.5,
+                    0.5,
+                    0.5,
+                    0.5
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    0.07230169948182827,
+                    0.08745344509550602,
+                    -0.6068926558772401,
+                    0.7866420173339563
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        },
+        {
+            "checkpoint_id": 3,
+            "position": [
+                3.393148407121603,
+                -0.5080307399180866,
+                0.4989876843541209
+            ],
+            "marker_pose": {
+                "position": [
+                    3.313,
+                    -1.001,
+                    0.5226
+                ],
+                "quaternion": [
+                    -0.5,
+                    0.5,
+                    0.5,
+                    0.5
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    0.24292114663412853,
+                    -0.2514429704539893,
+                    0.718974853336942,
+                    -0.6007003490895916
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        },
+        {
+            "checkpoint_id": 5,
+            "position": [
+                5.705033767395451,
+                -0.5237900150150427,
+                0.6966285905044068
+            ],
+            "marker_pose": {
+                "position": [
+                    5.754,
+                    -1.001,
+                    0.8376
+                ],
+                "quaternion": [
+                    -0.5,
+                    0.5,
+                    0.5,
+                    0.5
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    0.46267678608630475,
+                    -0.5508070476563335,
+                    -0.3842464881395346,
+                    0.5787023623775834
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        },
+        {
+            "checkpoint_id": 6,
+            "position": [
+                1.9530157415570015,
+                -0.30697850532053195,
+                0.28759420158258253
+            ],
+            "marker_pose": {
+                "position": [
+                    1.895,
+                    -0.282,
+                    -0.2084
+                ],
+                "quaternion": [
+                    0.0,
+                    0.0,
+                    0.7071068,
+                    0.7071068
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    0.3888658571897554,
+                    0.627098356861403,
+                    -0.40591057189820773,
+                    0.5392287117310013
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        },
+        {
+            "checkpoint_id": 8,
+            "position": [
+                4.757381286113403,
+                0.22773143483999547,
+                1.397658783184874
+            ],
+            "marker_pose": {
+                "position": [
+                    4.779,
+                    0.112,
+                    1.8836
+                ],
+                "quaternion": [
+                    0.0,
+                    1.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    -0.6204964389759082,
+                    -0.20664920228488792,
+                    -0.6600586286902267,
+                    0.3695982725944672
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        },
+        {
+            "checkpoint_id": 9,
+            "position": [
+                1.9791381617114643,
+                0.5548264962665086,
+                0.020293086909386106
+            ],
+            "marker_pose": {
+                "position": [
+                    2.066,
+                    1.046,
+                    -0.0144
+                ],
+                "quaternion": [
+                    -0.5,
+                    0.5,
+                    -0.5,
+                    -0.5
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    0.4511196700421687,
+                    0.41416635125431606,
+                    0.49153270003139266,
+                    0.619154973806704
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        },
+        {
+            "checkpoint_id": 12,
+            "position": [
+                0.48258484146675856,
+                -0.0374670797592494,
+                0.026627919972418965
+            ],
+            "marker_pose": {
+                "position": [
+                    0.0,
+                    -0.059,
+                    -0.1024
+                ],
+                "quaternion": [
+                    -0.5,
+                    0.5,
+                    -0.5,
+                    0.5
+                ]
+            },
+            "score_bands": [
+                {
+                    "radius": 0.1,
+                    "level": 3
+                },
+                {
+                    "radius": 0.2,
+                    "level": 2
+                },
+                {
+                    "radius": 0.3,
+                    "level": 1
+                }
+            ],
+            "attitude": {
+                "quaternion": [
+                    -0.12108615228829735,
+                    0.5384780721229967,
+                    0.8322416760229324,
+                    0.05247191874952439
+                ],
+                "centering_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ],
+                "roll_bands": [
+                    {
+                        "angle": 10.0,
+                        "level": 3
+                    },
+                    {
+                        "angle": 20.0,
+                        "level": 2
+                    },
+                    {
+                        "angle": 30.0,
+                        "level": 1
+                    }
+                ]
+            }
+        }
+    ],
+    "goalpoint_id": 12
+}
