@@ -143,6 +143,10 @@ bag.close()
         else:
             print(f"Warning: Telemetry extraction error: {res.stderr}")
 
+        # Clean up uncompressed bag file to save disk space and match share/logs structure
+        if os.path.exists(bag_path):
+            os.remove(bag_path)
+
     print(f"Reconstructed: {output_dir}")
     return True
 
