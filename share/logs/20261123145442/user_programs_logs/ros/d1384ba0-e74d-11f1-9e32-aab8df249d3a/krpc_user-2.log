@@ -1,0 +1,111 @@
+[rospy.client][INFO] 2026-11-23 14:55:56,530: init_node, name[/krpc_user], pid[790]
+[xmlrpc][INFO] 2026-11-23 14:55:56,531: XML-RPC server binding to 0.0.0.0:0
+[xmlrpc][INFO] 2026-11-23 14:55:56,531: Started XML-RPC server [http://krpc-user:35875/]
+[rospy.impl.masterslave][INFO] 2026-11-23 14:55:56,532: _ready: http://krpc-user:35875/
+[rospy.registration][INFO] 2026-11-23 14:55:56,532: Registering with master node http://krpc:11311
+[xmlrpc][INFO] 2026-11-23 14:55:56,532: xml rpc node: starting XML-RPC server
+[rospy.init][INFO] 2026-11-23 14:55:56,533: ROS Slave URI: [http://krpc-user:35875/]
+[rospy.init][INFO] 2026-11-23 14:55:56,533: registered with master
+[rospy.rosout][INFO] 2026-11-23 14:55:56,534: initializing /rosout core topic
+[rospy.rosout][INFO] 2026-11-23 14:55:56,539: connected to core topic /rosout
+[rospy.simtime][INFO] 2026-11-23 14:55:56,540: initializing /clock core topic
+[rospy.simtime][INFO] 2026-11-23 14:55:56,541: connected to core topic /clock
+[rospy.internal][INFO] 2026-11-23 14:55:56,565: topic[/event/checkpoint_passed/feedback] adding connection to [http://krpc-user:38427/], count 0
+[rosout][INFO] 2026-11-23 14:55:56,569: krpc_user v2.0 2026-11-23 ready
+[rospy.internal][INFO] 2026-11-23 14:55:56,572: topic[/event/checkpoint_passed/result] adding connection to [http://krpc-user:38427/], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,599: topic[/ctl/command/status] adding connection to [http://krpc:44011/], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,600: topic[/event/checkpoint_passed/goal] adding connection to [/krpc_api_node], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,601: topic[/event/checkpoint_passed/cancel] adding connection to [/krpc_api_node], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,623: topic[/ctl/command/feedback] adding connection to [http://krpc:44011/], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,643: topic[/ctl/command/result] adding connection to [http://krpc:44011/], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,700: topic[/rosout] adding connection to [/rosout], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:00,408: topic[/ctl/wrench] adding connection to [/record_rosbag], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:00,511: topic[/rosout] adding connection to [/record_rosbag], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:01,564: topic[/clock] adding connection to [http://krpc:35199/], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:01,568: topic[/event/checkpoint_passed/status] adding connection to [http://krpc-user:38427/], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:01,588: topic[/sensor_fusion/navigation] adding connection to [http://krpc:35199/], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:01,754: topic[/ctl/command/goal] adding connection to [/ctl_only], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:01,761: topic[/ctl/command/cancel] adding connection to [/ctl_only], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:01,770: topic[/ctl/wrench] adding connection to [/fsm], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:02,597: topic[/ctl/status] adding connection to [http://krpc:44011/], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:05,295: topic[/ib2_user/start] adding connection to [http://krpc:45799/], count 0
+[rosout][INFO] 2026-11-23 14:56:05,297: start id: 0
+[rosout][INFO] 2026-11-23 14:56:05,305: /mission/get_checkpoints -> success=True message={"checkpoint_count": 12, "checkpoints": [{"checkpoint_id": 1, "position": [1.5101690025764947, -0.5075683732993835, 0.6256067376337215], "marker_pose": {"position": [1.451, -1.001, 0.6806], "quaternio...
+[rosout][INFO] 2026-11-23 14:56:05,306: course json: {"checkpoint_count": 12, "checkpoints": [{"checkpoint_id": 1, "position": [1.5101690025764947, -0.5075683732993835, 0.6256067376337215], "marker_pose": {"position": [1.451, -1.001, 0.6806], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.39845967295836293, 0.5122579858814161, 0.544757522643983, -0.5310940467086972], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 2, "position": [2.99873474367743, -0.5130040585801793, 0.8234191103990199], "marker_pose": {"position": [2.973, -1.001, 0.7176], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.1657472718265456, -0.31968654937837493, 0.6507958618675891, -0.6684258359793007], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 3, "position": [3.1981514809401226, -0.5157314123553323, 0.48621022787784407], "marker_pose": {"position": [3.313, -1.001, 0.5226], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.5668139062123818, 0.41528964560988635, -0.46117891451077575, 0.5418214787032156], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 4, "position": [4.20327284170288, -0.5264561973992126, 0.6785233784128072], "marker_pose": {"position": [4.181, -1.001, 0.5226], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.13074703660182072, -0.09164195230597975, 0.7168504685640016, -0.6786990280801662], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 5, "position": [5.745584419419949, -0.527597221858922, 0.6769171208503841], "marker_pose": {"position": [5.754, -1.001, 0.8376], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.35450876257151454, 0.134570036083235, -0.6880954329222844, 0.61865912895557], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 6, "position": [2.013198007731199, -0.14585327435047615, 0.25796176951299166], "marker_pose": {"position": [1.895, -0.282, -0.2084], "quaternion": [0.0, 0.0, 0.7071068, 0.7071068]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.021349963197996313, 0.7619137691354232, -0.19412731938872477, 0.6175323241258269], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 7, "position": [1.3821741720293652, -0.5289377012981105, 0.5213337355055453], "marker_pose": {"position": [1.451, -1.001, 0.3716], "quaternion": [-0.5, 0.5, 0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.6804533532269945, -0.47907551774285156, -0.4490666101245826, 0.32528304913225053], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 8, "position": [4.8786882223545485, 0.03051016030061901, 1.4004626858236269], "marker_pose": {"position": [4.779, 0.112, 1.8836], "quaternion": [0.0, 1.0, 0.0, 0.0]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.01945004838666338, -0.759289362814124, 0.15221000582047878, 0.6324029358432867], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 9, "position": [2.05757606488208, 0.5559786653516281, 0.08463599803383268], "marker_pose": {"position": [2.066, 1.046, -0.0144], "quaternion": [-0.5, 0.5, -0.5, -0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.38403961048192736, -0.2531129480022309, 0.653842412539673, 0.6007807526034847], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 10, "position": [6.00197661381606, -0.08840321388593061, 1.4172065292292824], "marker_pose": {"position": [5.851, 0.01, 1.8836], "quaternion": [0.0, 1.0, 0.0, 0.0]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [0.5874727949039401, 0.082190205241687, 0.8026340286695983, 0.06244278526533726], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 11, "position": [6.705934633233632, 0.3522042508340416, 1.1261663554271493], "marker_pose": {"position": [7.195, 0.363, 1.2296], "quaternion": [-0.5, 0.5, 0.5, -0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.6789281939115934, -0.08340887614977976, -0.06306815847209957, 0.7267199421223495], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}, {"checkpoint_id": 12, "position": [0.47377581877244834, -0.17936332251351145, 0.002714909218457698], "marker_pose": {"position": [0.0, -0.059, -0.1024], "quaternion": [-0.5, 0.5, -0.5, 0.5]}, "score_bands": [{"radius": 0.1, "level": 3}, {"radius": 0.2, "level": 2}, {"radius": 0.3, "level": 1}], "attitude": {"quaternion": [-0.07844000915961351, 0.20784954761873062, 0.964662834531909, 0.14167337855289328], "centering_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}], "roll_bands": [{"angle": 10.0, "level": 3}, {"angle": 20.0, "level": 2}, {"angle": 30.0, "level": 1}]}}], "goalpoint_id": 12}
+[rosout][INFO] 2026-11-23 14:56:05,308: course: 11 checkpoints + goal 12
+[rosout][INFO] 2026-11-23 14:56:05,324: [   0.0 s] judge connected: ['/kibo_rpc_judge']
+[rosout][INFO] 2026-11-23 14:56:05,389: [   0.1 s] route [11, 10, 5, 8, 4, 3, 2, 9, 6, 1, 7, 12], expected finish 228 s after Mission Start, expected score 186.2, planned skips []
+[rosout][INFO] 2026-11-23 14:56:05,390: [   0.1 s] start-up took 0.1 s; mission clock restarts at Mission Start
+[rospy.internal][INFO] 2026-11-23 14:56:05,437: topic[/event/checkpoint_passed/cancel] adding connection to [/record_rosbag], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:05,438: topic[/ctl/command/goal] adding connection to [/record_rosbag], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:05,439: topic[/ctl/command/cancel] adding connection to [/record_rosbag], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:05,441: topic[/event/checkpoint_passed/goal] adding connection to [/record_rosbag], count 1
+[rosout][INFO] 2026-11-23 14:56:10,408: /event/mission_start -> success=True message=accepted
+[rosout][INFO] 2026-11-23 14:56:10,411: [   3.1 s] startup timeline (s from start signal): node launch -10.2, judge subscribed -10.2, judge connected -10.2, start signal +0.0, servers ready +0.0, course loaded +0.0, gate passed +0.0, mission_start call +0.1, mission_start returned +3.2 | wall/ros 1.04 | polls 2, errors 0 | first check: judge connected: ['/kibo_rpc_judge'] | last check: judge connected: ['/kibo_rpc_judge']
+[rosout][INFO] 2026-11-23 14:56:10,414: fan mode: nav velocity bias ['-5.5', '-3.9', '-1.4'] mm/s
+[rosout][INFO] 2026-11-23 14:56:11,198: fan mode: JAXA controller on standby (attempt 1)
+[rosout][INFO] 2026-11-23 14:56:11,200: [   3.6 s] fan -> checkpoint 11: 6.60 m, turn 84 deg, plan 36.0 s
+[rosout][INFO] 2026-11-23 14:57:18,282: [  39.7 s] cp 11 Lv3 held (fan, leg 36.1 s): dist 0.002 m | centering 0.2 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-23 14:57:25,177: [  43.4 s] reported cp 11: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 14:57:25,180: [  43.4 s] fan -> checkpoint 10: 0.88 m, turn 132 deg, plan 16.1 s
+[rosout][INFO] 2026-11-23 14:57:55,116: [  59.3 s] cp 10 Lv3 held (fan, leg 16.0 s): dist 0.002 m | centering 0.1 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-23 14:57:56,978: [  60.4 s] reported cp 10: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 14:57:56,981: [  60.4 s] fan -> checkpoint 5: 0.90 m, turn 89 deg, plan 16.2 s
+[rosout][INFO] 2026-11-23 14:58:27,477: [  76.4 s] cp 5 Lv3 held (fan, leg 16.1 s): dist 0.004 m | centering 0.4 deg | roll 0.1 deg
+[rosout][INFO] 2026-11-23 14:58:29,416: [  77.4 s] reported cp 5: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 14:58:29,419: [  77.4 s] fan -> checkpoint 8: 1.26 m, turn 160 deg, plan 19.4 s
+[rosout][INFO] 2026-11-23 14:59:06,195: [  96.7 s] cp 8 Lv3 held (fan, leg 19.3 s): dist 0.003 m | centering 0.2 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-23 14:59:08,154: [  97.7 s] reported cp 8: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 14:59:08,157: [  97.7 s] fan -> checkpoint 4: 1.13 m, turn 151 deg, plan 18.3 s
+[rosout][INFO] 2026-11-23 14:59:42,657: [ 115.9 s] cp 4 Lv3 held (fan, leg 18.1 s): dist 0.003 m | centering 0.4 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-23 14:59:44,618: [ 116.9 s] reported cp 4: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 14:59:44,621: [ 116.9 s] fan -> checkpoint 3: 1.02 m, turn 97 deg, plan 17.0 s
+[rosout][INFO] 2026-11-23 15:00:17,790: [ 133.8 s] cp 3 Lv3 held (fan, leg 16.9 s): dist 0.004 m | centering 0.5 deg | roll 0.1 deg
+[rosout][INFO] 2026-11-23 15:00:19,711: [ 134.8 s] reported cp 3: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 15:00:19,713: [ 134.8 s] fan -> checkpoint 2: 0.39 m, turn 55 deg, plan 10.5 s
+[rosout][INFO] 2026-11-23 15:00:39,895: [ 145.3 s] cp 2 Lv3 held (fan, leg 10.5 s): dist 0.003 m | centering 0.3 deg | roll 0.1 deg
+[rosout][INFO] 2026-11-23 15:00:41,807: [ 146.3 s] reported cp 2: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 15:00:41,809: [ 146.3 s] fan -> checkpoint 9: 1.60 m, turn 175 deg, plan 20.9 s
+[rosout][INFO] 2026-11-23 15:01:20,430: [ 167.1 s] cp 9 Lv3 held (fan, leg 20.7 s): dist 0.003 m | centering 0.3 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-23 15:01:22,232: [ 168.1 s] reported cp 9: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 15:01:22,235: [ 168.1 s] fan -> checkpoint 6: 0.73 m, turn 173 deg, plan 14.7 s
+[rosout][INFO] 2026-11-23 15:01:48,732: [ 182.6 s] cp 6 Lv3 held (fan, leg 14.6 s): dist 0.004 m | centering 0.3 deg | roll 0.1 deg
+[rosout][INFO] 2026-11-23 15:01:50,680: [ 183.7 s] reported cp 6: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 15:01:50,683: [ 183.7 s] fan -> checkpoint 1: 0.72 m, turn 176 deg, plan 14.6 s
+[rosout][INFO] 2026-11-23 15:02:18,462: [ 198.1 s] cp 1 Lv3 held (fan, leg 14.5 s): dist 0.003 m | centering 0.3 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-23 15:02:20,438: [ 199.2 s] reported cp 1: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 15:02:20,440: [ 199.2 s] fan -> checkpoint 7: 0.17 m, turn 42 deg, plan 7.0 s
+[rosout][INFO] 2026-11-23 15:02:33,288: [ 206.0 s] cp 7 Lv3 held (fan, leg 6.8 s): dist 0.002 m | centering 0.2 deg | roll 0.0 deg
+[rosout][INFO] 2026-11-23 15:02:35,189: [ 207.0 s] reported cp 7: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 15:02:35,191: [ 207.0 s] fan -> goal 12: 1.10 m, turn 115 deg, plan 17.5 s
+[rosout][INFO] 2026-11-23 15:03:07,097: [ 224.3 s] cp 12 Lv3 held (fan, leg 17.3 s): dist 0.003 m | centering 0.4 deg | roll 0.4 deg
+[rosout][INFO] 2026-11-23 15:03:08,770: [ 225.4 s] reported cp 12: True checkpoint accepted: band=3
+[rosout][INFO] 2026-11-23 15:03:08,772: [ 225.4 s] levels {11: 3, 10: 3, 5: 3, 8: 3, 4: 3, 3: 3, 2: 3, 9: 3, 6: 3, 1: 3, 7: 3, 12: 3}
+[rosout][INFO] 2026-11-23 15:03:08,786: /event/mission_finished -> success=True message=accepted
+[rosout][INFO] 2026-11-23 15:03:08,789: [ 225.4 s] mission finished sent
+[rospy.internal][INFO] 2026-11-23 15:03:12,009: topic[/ib2_user/start] removing connection to http://krpc:45799/
+[rosout][INFO] 2026-11-23 15:03:16,701: finish processing
+[rospy.impl.masterslave][INFO] 2026-11-23 15:03:16,963: external shutdown request from [/rosnode]: user request
+[rospy.core][INFO] 2026-11-23 15:03:16,964: signal_shutdown [external shutdown request from [/rosnode]: [user request]]
+[rospy.internal][INFO] 2026-11-23 15:03:16,967: topic[/rosout] removing connection to /rosout
+[rospy.internal][INFO] 2026-11-23 15:03:16,968: topic[/rosout] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:16,968: topic[/ctl/command/goal] removing connection to /ctl_only
+[rospy.internal][INFO] 2026-11-23 15:03:16,969: topic[/ctl/command/goal] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:16,969: topic[/ctl/command/cancel] removing connection to /ctl_only
+[rospy.internal][INFO] 2026-11-23 15:03:16,969: topic[/ctl/command/cancel] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:16,970: topic[/event/checkpoint_passed/goal] removing connection to /krpc_api_node
+[rospy.internal][INFO] 2026-11-23 15:03:16,970: topic[/event/checkpoint_passed/goal] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:16,971: topic[/event/checkpoint_passed/cancel] removing connection to /krpc_api_node
+[rospy.internal][INFO] 2026-11-23 15:03:16,971: topic[/event/checkpoint_passed/cancel] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:16,972: topic[/ctl/wrench] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:16,972: topic[/ctl/wrench] removing connection to /fsm
+[rospy.internal][INFO] 2026-11-23 15:03:16,972: topic[/clock] removing connection to http://krpc:35199/
+[rospy.internal][INFO] 2026-11-23 15:03:16,973: topic[/ctl/command/status] removing connection to http://krpc:44011/
+[rospy.internal][INFO] 2026-11-23 15:03:16,973: topic[/ctl/command/result] removing connection to http://krpc:44011/
+[rospy.internal][INFO] 2026-11-23 15:03:16,973: topic[/ctl/command/feedback] removing connection to http://krpc:44011/
+[rospy.internal][INFO] 2026-11-23 15:03:16,974: topic[/event/checkpoint_passed/status] removing connection to http://krpc-user:38427/
+[rospy.internal][INFO] 2026-11-23 15:03:16,974: topic[/event/checkpoint_passed/result] removing connection to http://krpc-user:38427/
+[rospy.internal][INFO] 2026-11-23 15:03:16,975: topic[/event/checkpoint_passed/feedback] removing connection to http://krpc-user:38427/
+[rospy.internal][INFO] 2026-11-23 15:03:16,975: topic[/sensor_fusion/navigation] removing connection to http://krpc:35199/
+[rospy.internal][INFO] 2026-11-23 15:03:16,975: topic[/ctl/status] removing connection to http://krpc:44011/
+[rospy.core][INFO] 2026-11-23 15:03:16,994: signal_shutdown [atexit]

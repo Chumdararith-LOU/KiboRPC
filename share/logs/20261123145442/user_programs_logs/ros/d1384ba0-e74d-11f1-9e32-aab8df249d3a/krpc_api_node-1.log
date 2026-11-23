@@ -1,0 +1,61 @@
+[rospy.client][INFO] 2026-11-23 14:55:56,314: init_node, name[/krpc_api_node], pid[789]
+[xmlrpc][INFO] 2026-11-23 14:55:56,315: XML-RPC server binding to 0.0.0.0:0
+[xmlrpc][INFO] 2026-11-23 14:55:56,316: Started XML-RPC server [http://krpc-user:38427/]
+[rospy.init][INFO] 2026-11-23 14:55:56,317: ROS Slave URI: [http://krpc-user:38427/]
+[rospy.impl.masterslave][INFO] 2026-11-23 14:55:56,317: _ready: http://krpc-user:38427/
+[rospy.registration][INFO] 2026-11-23 14:55:56,319: Registering with master node http://krpc:11311
+[xmlrpc][INFO] 2026-11-23 14:55:56,320: xml rpc node: starting XML-RPC server
+[rospy.init][INFO] 2026-11-23 14:55:56,418: registered with master
+[rospy.rosout][INFO] 2026-11-23 14:55:56,419: initializing /rosout core topic
+[rospy.rosout][INFO] 2026-11-23 14:55:56,422: connected to core topic /rosout
+[rospy.simtime][INFO] 2026-11-23 14:55:56,423: initializing /clock core topic
+[rospy.simtime][INFO] 2026-11-23 14:55:56,424: connected to core topic /clock
+[rosout][INFO] 2026-11-23 14:55:56,427: checkpoint source path (parameter): /tmp/share/logs/latest/cheat_sheet.json
+[rosout][INFO] 2026-11-23 14:55:56,445: KrpcApiNode initialized (sim mode)
+[rosout][INFO] 2026-11-23 14:55:56,447: KrpcApiNode started
+[rospy.internal][INFO] 2026-11-23 14:55:56,473: topic[/gs/data] adding connection to [/kibo_rpc_judge], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,481: topic[/gs/data] adding connection to [/krpc_status_indicator], count 1
+[rospy.internal][INFO] 2026-11-23 14:55:56,482: topic[/gs/data] adding connection to [/krpc_flight_recorder], count 2
+[rospy.internal][INFO] 2026-11-23 14:55:56,569: topic[/event/checkpoint_passed/feedback] adding connection to [/krpc_user], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,573: topic[/event/checkpoint_passed/result] adding connection to [/krpc_user], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,597: topic[/event/checkpoint_passed/goal] adding connection to [http://krpc-user:35875/], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,597: topic[/event/checkpoint_passed/cancel] adding connection to [http://krpc-user:35875/], count 0
+[rospy.internal][INFO] 2026-11-23 14:55:56,700: topic[/rosout] adding connection to [/rosout], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:00,397: topic[/rosout] adding connection to [/record_rosbag], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:01,474: topic[/clock] adding connection to [http://krpc:35199/], count 0
+[rospy.internal][INFO] 2026-11-23 14:56:01,569: topic[/event/checkpoint_passed/status] adding connection to [/krpc_user], count 0
+[rosout][INFO] 2026-11-23 14:56:05,303: get_checkpoints
+[rospy.internal][INFO] 2026-11-23 14:56:05,437: topic[/event/checkpoint_passed/feedback] adding connection to [/record_rosbag], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:05,438: topic[/event/checkpoint_passed/result] adding connection to [/record_rosbag], count 1
+[rospy.internal][INFO] 2026-11-23 14:56:05,439: topic[/gs/data] adding connection to [/record_rosbag], count 3
+[rospy.internal][INFO] 2026-11-23 14:56:05,441: topic[/event/checkpoint_passed/status] adding connection to [/record_rosbag], count 1
+[rosout][INFO] 2026-11-23 14:56:10,401: mission_start
+[rosout][INFO] 2026-11-23 14:56:10,405: /gs/data: {"status": "Mission Start"}
+[rosout][INFO] 2026-11-23 14:57:18,284: checkpoint_passed start: 11
+[rosout][INFO] 2026-11-23 14:57:55,120: checkpoint_passed start: 10
+[rosout][INFO] 2026-11-23 14:58:27,485: checkpoint_passed start: 5
+[rosout][INFO] 2026-11-23 14:59:06,198: checkpoint_passed start: 8
+[rosout][INFO] 2026-11-23 14:59:42,662: checkpoint_passed start: 4
+[rosout][INFO] 2026-11-23 15:00:17,799: checkpoint_passed start: 3
+[rosout][INFO] 2026-11-23 15:00:39,906: checkpoint_passed start: 2
+[rosout][INFO] 2026-11-23 15:01:20,434: checkpoint_passed start: 9
+[rosout][INFO] 2026-11-23 15:01:48,739: checkpoint_passed start: 6
+[rosout][INFO] 2026-11-23 15:02:18,470: checkpoint_passed start: 1
+[rosout][INFO] 2026-11-23 15:02:33,293: checkpoint_passed start: 7
+[rosout][INFO] 2026-11-23 15:03:07,100: checkpoint_passed start: 12
+[rosout][INFO] 2026-11-23 15:03:08,780: mission_finished
+[rosout][INFO] 2026-11-23 15:03:08,782: /gs/data: {"status": "Mission Finish"}
+[rospy.internal][INFO] 2026-11-23 15:03:09,031: topic[/gs/data] removing connection to /krpc_flight_recorder
+[rospy.internal][INFO] 2026-11-23 15:03:10,534: topic[/gs/data] removing connection to /kibo_rpc_judge
+[rospy.internal][INFO] 2026-11-23 15:03:16,971: topic[/event/checkpoint_passed/goal] removing connection to http://krpc-user:35875/
+[rospy.internal][INFO] 2026-11-23 15:03:16,971: topic[/event/checkpoint_passed/cancel] removing connection to http://krpc-user:35875/
+[rospy.internal][INFO] 2026-11-23 15:03:17,047: topic[/event/checkpoint_passed/status] removing connection to /krpc_user
+[rospy.internal][INFO] 2026-11-23 15:03:17,048: topic[/event/checkpoint_passed/result] removing connection to /krpc_user
+[rospy.internal][INFO] 2026-11-23 15:03:17,048: topic[/event/checkpoint_passed/feedback] removing connection to /krpc_user
+[rospy.internal][INFO] 2026-11-23 15:03:22,955: topic[/clock] removing connection to http://krpc:35199/
+[rospy.internal][INFO] 2026-11-23 15:03:23,061: topic[/rosout] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:23,066: topic[/gs/data] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:23,069: topic[/event/checkpoint_passed/status] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:23,071: topic[/event/checkpoint_passed/result] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:23,074: topic[/event/checkpoint_passed/feedback] removing connection to /record_rosbag
+[rospy.internal][INFO] 2026-11-23 15:03:24,081: topic[/rosout] removing connection to /rosout
