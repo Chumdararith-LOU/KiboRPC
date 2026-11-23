@@ -29,6 +29,13 @@ NAV_DELAY = 0.1        # s, sim.yaml nav_parameter.delay
 POS_WN, POS_ZETA = 1.2, 0.9
 ATT_WN, ATT_ZETA = 2.5, 0.9
 SAMPLES = 9
+PLAN_LOAD = 0.8        # v2.1: a leg's planned push + twist together use at most 80 % of any fan,
+                       # leaving room for corrections (web gravity module: pulses up to 0.14 N)
+VC_MAX = 0.06         # v2.1: the position correction asks for at most 6 cm/s of approach speed and
+WC_MAX = 0.2          # the attitude correction for 0.2 rad/s (far off course, damping must dominate)
+KI = 0.4               # v2.1: slow correction for a steady outside push (web baseline about 7 mN)
+I_ZONE_M = 0.05        # ... and only learned within 5 cm of the reference
+I_MAX = 0.02           # m/s2 cap on that correction (about 64 mN)
 
 
 def _profile(d, vmax, a):
@@ -101,8 +108,42 @@ class Leg(object):
         self.axis = [dq[0] / s, dq[1] / s, dq[2] / s] if s > 1e-9 else [1.0, 0.0, 0.0]
         inertia = sum(INERTIA[k] * self.axis[k] ** 2 for k in range(3))
         self.alpha = eta_t * torque_cap(self.axis) / inertia
+        # v2.1: push and twist share the same fans; scale both until their peaks fit PLAN_LOAD.
+        k = self._joint_scale()
+        self.acc *= k
+        self.alpha *= k
+        self.prof_p = _profile(self.d, v_max, self.acc)
         self.prof_r = _profile(self.ang, w_max, self.alpha)
         self.duration = max(self.prof_p[3], self.prof_r[3])
+
+    def _peak_load(self, k):
+        worst = 0.0
+        T = [INERTIA[i] * self.axis[i] * self.alpha * k for i in range(3)]
+        for j in range(SAMPLES):
+            q = g.q_slerp(self.q0, self.q1, j / float(SAMPLES - 1))
+            F = g.q_rotate(g.q_conj(q), g.v_scale(self.u, MASS * self.acc * k))
+            for sf in (1.0, -1.0):
+                for st in (1.0, -1.0):
+                    worst = max(worst, fans.load([x * sf for x in F], [x * st for x in T]))
+        return worst
+
+    def _joint_scale(self):
+        if self.d <= 1e-6 and self.ang <= 1e-6:
+            return 1.0
+        if self._peak_load(1.0) <= PLAN_LOAD:
+            return 1.0
+        lo, hi = 0.0, 1.0
+        for _ in range(14):
+            mid = 0.5 * (lo + hi)
+            if self._peak_load(mid) <= PLAN_LOAD:
+                lo = mid
+            else:
+                hi = mid
+        return max(lo, 0.05)
+
+    def s_at(self, t):
+        """Distance along the line the reference has covered at time t."""
+        return _sample(t, self.acc, self.prof_p)[0]
 
     def ref(self, t):
         s, sd, sdd = _sample(t, self.acc, self.prof_p)
@@ -125,6 +166,9 @@ class FanController(object):
         self.cmd_hist = deque()     # (time, world accel, body angular accel) actually commanded
         self.last_load = 0.0
         self.scaled = 0
+        self.integ = [0.0, 0.0, 0.0]      # v2.1: integral of the position error (world frame)
+        self.t_last = None
+        self.limited = False
         self.vel_bias = [0.0, 0.0, 0.0]   # nav velocity bias (sim.yaml: about 7 mm/s), measured at rest
         self._bias_sum = [0.0, 0.0, 0.0]
         self._bias_n = 0
@@ -163,10 +207,27 @@ class FanController(object):
         v0 = [v0[k] - self.vel_bias[k] for k in range(3)]
         p, v, q, w = self._predict(now, p0, v0, q0, w0)
         pr, vr, ar, qr, wr, alr = ref
-        a_cmd = [ar[k] + self.kp * (pr[k] - p[k]) + self.kd * (vr[k] - v[k]) for k in range(3)]
+        dt = 0.0 if self.t_last is None else max(0.0, min(0.1, now - self.t_last))
+        self.t_last = now
+        if not self.limited and g.distance(pr, p) < I_ZONE_M:   # anti-windup: only near the reference
+            self.integ = [self.integ[k] + (pr[k] - p[k]) * dt for k in range(3)]  # and while the fans have room
+        corr = [KI * x for x in self.integ]
+        n = math.sqrt(sum(x * x for x in corr))
+        if n > I_MAX:
+            self.integ = [x * I_MAX / n for x in self.integ]
+            corr = [x * I_MAX / n for x in corr]
+        vc = [self.kp / self.kd * (pr[k] - p[k]) for k in range(3)]
+        n = math.sqrt(sum(x * x for x in vc))
+        if n > VC_MAX:
+            vc = [x * VC_MAX / n for x in vc]
+        a_cmd = [ar[k] + self.kd * (vr[k] + vc[k] - v[k]) + corr[k] for k in range(3)]
         e = rotvec(g.q_mul(g.q_conj(q), qr))          # attitude error, body frame
         wr_b = g.q_rotate(g.q_conj(q), g.q_rotate(qr, wr))   # reference rate in the current body frame
-        al_cmd = [alr[k] + self.kpa * e[k] + self.kda * (wr_b[k] - w[k]) for k in range(3)]
+        wc = [self.kpa / self.kda * x for x in e]
+        n = math.sqrt(sum(x * x for x in wc))
+        if n > WC_MAX:
+            wc = [x * WC_MAX / n for x in wc]
+        al_cmd = [alr[k] + self.kda * (wr_b[k] + wc[k] - w[k]) for k in range(3)]
         Iw = [INERTIA[k] * w[k] for k in range(3)]
         gyro = g.v_cross(w, Iw)
         T = [INERTIA[k] * al_cmd[k] + gyro[k] for k in range(3)]
@@ -182,6 +243,7 @@ class FanController(object):
     def _limit(self, F, T):
         load = fans.load(F, T)
         self.last_load = load
+        self.limited = load > LOAD_MAX
         if load <= LOAD_MAX:
             return F, T
         self.scaled += 1
@@ -196,6 +258,23 @@ class FanController(object):
             else:
                 hi = mid
         return [x * lo for x in F], T
+
+    def brake(self, now, nav):
+        """v2.1: bring the robot to rest where it is (before handing back to JAXA's controller)."""
+        p0, v0, q0, w0 = nav
+        v0 = [v0[k] - self.vel_bias[k] for k in range(3)]
+        p, v, q, w = self._predict(now, p0, v0, q0, w0)
+        a_cmd = [-self.kd * v[k] for k in range(3)]
+        al_cmd = [-self.kda * w[k] for k in range(3)]
+        Iw = [INERTIA[k] * w[k] for k in range(3)]
+        gyro = g.v_cross(w, Iw)
+        T = [INERTIA[k] * al_cmd[k] + gyro[k] for k in range(3)]
+        F = g.q_rotate(g.q_conj(q), [MASS * x for x in a_cmd])
+        F, T = self._limit(F, T)
+        a_real = g.v_scale(g.q_rotate(q, F), 1.0 / MASS)
+        al_real = [(T[k] - gyro[k]) / INERTIA[k] for k in range(3)]
+        self.cmd_hist.append((now, a_real, al_real))
+        return F, T, math.sqrt(sum(x * x for x in v))
 
     def stop(self):
         return [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]

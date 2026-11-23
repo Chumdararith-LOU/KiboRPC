@@ -34,7 +34,7 @@ import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v2.0 2026-11-23"
+VERSION = "v2.1 2026-11-24"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -581,7 +581,7 @@ class UserTemplate:
             except fanmode.FanAbort as exc:
                 rospy.logwarn('[%6.1f s] fan mode stopped: %s; handing back to JAXA\'s controller',
                               self.__elapsed(), exc)
-            self.__fan.release(keep_pose=True)
+            self.__fan.brake_and_release()       # v2.1: hand JAXA's controller a robot at rest
             rospy.sleep(0.5)
             fan = False
         return fan, self.__visit(spec, is_goal=is_goal)
