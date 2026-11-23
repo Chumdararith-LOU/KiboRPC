@@ -1,0 +1,868 @@
+[0.000] /prop: /prop/i2c_comm_duration             : 0.010000
+[0.000] /fsm: /fan/fj0/fan08   : 0.000000
+[0.000] /krpc_gravity_module: gravity timer start
+[0.000] /krpc_keep_pose: waiting for /ctl/command action server (timeout=60s)
+[0.000] /ctl_only: /navigation_check/dw   : 400.000000
+[3.599] /krpc_keep_pose: KEEP_POSE accepted at x=0.2093 y=0.0033 z=-0.0168
+[3.598] /ctl_only: /ctl/command: Succeeded
+[0.000] /krpc_keep_pose_release: waiting for /ctl/command action server (timeout=60s)
+[4.342] /krpc_keep_pose_release: waiting for Mission Start to release KEEP_POSE
+[9.863] /krpc_gravity_module: gsdata_callback() start: data: "{\"status\": \"Mission Start\"}"
+[9.863] /krpc_gravity_module: gravity timer start
+[9.863] /krpc_gravity_module: receive status:Mission Start
+[9.863] /ctl_only: /ctl/command: Succeeded
+[9.863] /krpc_keep_pose_release: /ctl/command goal from /krpc_user detected (type=0)
+[9.876] /ctl_only: /ctl/command: Succeeded
+[9.876] /krpc_keep_pose_release: STAND_BY accepted at x=0.2193 y=0.0098 z=-0.0163
+[10.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[12.966] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0020697600000000003
+[12.981] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0020697600000000003
+[13.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0020697600000000003
+[14.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.00213444
+[15.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0020697600000000003
+[16.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[17.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020050800000000002
+[18.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[19.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[20.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0020050800000000002
+[21.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0019404000000000001
+[22.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.0019404000000000001
+[23.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.0019404000000000001
+[24.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.0019404000000000001
+[25.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0019404000000000001
+[26.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[27.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0020050800000000002
+[28.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0021991200000000006
+z: 0.0019404000000000001
+[29.004] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0021991200000000006
+z: 0.0019404000000000001
+[30.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0021991200000000006
+z: 0.0019404000000000001
+[31.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[32.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[33.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020050800000000002
+[34.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020050800000000002
+[35.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[36.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[37.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.019796000000000005
+z: 0.0020050800000000002
+[38.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.019796000000000005
+z: 0.0020050800000000002
+[39.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023930522
+y: 0.019796000000000005
+z: 0.0020697600000000003
+[40.003] /krpc_gravity_module: call_gravity_parameter: x: -0.0036866032000000006
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[41.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0049154644000000015
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[42.000] /krpc_gravity_module: call_gravity_parameter: x: -0.03949694980000001
+y: 0.00213444
+z: 0.0020697600000000003
+[43.000] /krpc_gravity_module: call_gravity_parameter: x: -0.03949694980000001
+y: 0.00213444
+z: 0.0020697600000000003
+[44.000] /krpc_gravity_module: call_gravity_parameter: x: -0.03949694980000001
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[45.000] /krpc_gravity_module: call_gravity_parameter: x: -0.03949694980000001
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[46.000] /krpc_gravity_module: call_gravity_parameter: x: -0.03949694980000001
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[47.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[47.384] /ctl_only: /ctl/command: Succeeded
+[48.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[48.000] /ctl_only: DISTURBED
+[48.765] /ctl_only: COLLISION
+[48.766] /ctl_only: /ctl/command: Preempted
+[49.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020050800000000002
+z: 0.0020697600000000003
+[50.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.0020697600000000003
+[51.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.00213444
+[52.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[53.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[54.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020697600000000003
+z: 0.00213444
+[55.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0054328848
+y: 0.0020697600000000003
+z: 0.00213444
+[56.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0052388546
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[57.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0052388546
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[58.000] /krpc_gravity_module: call_gravity_parameter: x: 0.005044824400000002
+y: 0.0020697600000000003
+z: 0.00213444
+[59.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[60.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[61.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023283820000000004
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[62.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0019404000000000001
+z: 0.0021991200000000006
+[63.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0019404000000000001
+z: 0.0021991200000000006
+[64.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[65.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[66.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[67.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.0022638000000000003
+[68.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.0022638000000000003
+[69.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[70.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[71.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[72.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0021991200000000006
+[73.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0021991200000000006
+z: 0.00213444
+[74.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0021991200000000006
+z: 0.00213444
+[75.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.00213444
+[76.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.00213444
+[77.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.00213444
+[78.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0441
+y: 0.0020697600000000003
+z: 0.00213444
+[79.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0441
+y: 0.0020697600000000003
+z: 0.00213444
+[80.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0441
+y: 0.0020697600000000003
+z: 0.00213444
+[81.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0441
+y: 0.0020697600000000003
+z: 0.00213444
+[82.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0441
+y: 0.0020697600000000003
+z: 0.00213444
+[83.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023283820000000004
+y: 0.0020697600000000003
+z: 0.00213444
+[84.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023283820000000004
+y: 0.0020697600000000003
+z: 0.00213444
+[85.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023283820000000004
+y: 0.0020697600000000003
+z: 0.00213444
+[86.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0027164424
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[87.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0027164424
+y: 0.0020697600000000003
+z: 0.00213444
+[88.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.00213444
+[89.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[90.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[91.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[92.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.00213444
+[93.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0021991200000000006
+z: 0.00213444
+[94.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0022638000000000003
+z: 0.00213444
+[95.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: 0.00213444
+[96.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: 0.00213444
+[97.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: 0.00213444
+[98.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0022638000000000003
+z: 0.00213444
+[99.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: 0.00213444
+[100.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0021991200000000006
+z: 0.0021991200000000006
+[101.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0021991200000000006
+z: 0.0021991200000000006
+[102.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0021991200000000006
+z: 0.0022638000000000003
+[103.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0022638000000000003
+[104.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0030398326
+y: 0.00213444
+z: 0.0021991200000000006
+[105.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0037512734000000004
+y: 0.00213444
+z: 0.0021991200000000006
+[106.000] /krpc_gravity_module: call_gravity_parameter: x: -0.006920456200000001
+y: 0.00213444
+z: 0.0021991200000000006
+[107.000] /krpc_gravity_module: call_gravity_parameter: x: -0.03350277000000001
+y: 0.00213444
+z: 0.0021991200000000006
+[107.025] /ctl_only: /ctl/command: Succeeded
+[108.000] /krpc_gravity_module: call_gravity_parameter: x: -0.03350277000000001
+y: 0.00213444
+z: 0.00213444
+[109.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0021991200000000006
+[110.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0021991200000000006
+[111.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0021991200000000006
+[112.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0021991200000000006
+[113.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.0021991200000000006
+[114.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0021991200000000006
+[115.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0021991200000000006
+[116.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.00213444
+[117.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.00213444
+[118.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020050800000000002
+z: 0.00213444
+[119.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020697600000000003
+z: 0.00213444
+[120.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[121.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[122.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[123.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[124.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[125.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[126.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[127.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0020050800000000002
+[128.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0020050800000000002
+[129.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0020050800000000002
+[130.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[131.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[132.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020697600000000003
+[133.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020697600000000003
+[134.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020697600000000003
+[135.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020697600000000003
+[136.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[137.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[138.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020697600000000003
+[139.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[140.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[140.489] /ctl_only: /ctl/command: Succeeded
+[141.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[142.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020050800000000002
+[143.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020050800000000002
+[144.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020050800000000002
+[145.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[146.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[147.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[148.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[149.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[150.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0020697600000000003
+[151.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0020697600000000003
+[152.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.0020050800000000002
+z: -0.004900000000000001
+[153.000] /krpc_gravity_module: call_gravity_parameter: x: -0.002522412200000001
+y: 0.0020050800000000002
+z: -0.01862
+[154.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0025870922
+y: 0.0020050800000000002
+z: -0.008485976800000001
+[155.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0025870922
+y: 0.0020050800000000002
+z: -0.004520397000000001
+[156.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: -0.0027072990000000003
+[157.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: -0.0027072990000000003
+[158.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: -0.040817
+z: -0.0024500000000000004
+[159.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: -0.040817
+z: -0.0024500000000000004
+[160.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: -0.005537000000000001
+z: -0.0024500000000000004
+[161.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: -0.0024500000000000004
+[162.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0020050800000000002
+[163.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.00213444
+z: 0.0020050800000000002
+[164.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[165.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0020050800000000002
+[166.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[167.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[167.517] /ctl_only: /ctl/command: Succeeded
+[168.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[169.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[170.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[171.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[172.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0018757200000000002
+z: 0.0020050800000000002
+[173.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[174.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0019404000000000001
+z: 0.0020697600000000003
+[175.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0020697600000000003
+[176.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.00213444
+[177.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[178.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[179.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[180.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.00213444
+[181.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020697600000000003
+z: 0.00213444
+[182.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020050800000000002
+z: 0.00213444
+[183.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.00213444
+[184.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.00213444
+[185.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.00213444
+[186.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.042316400000000004
+[187.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.007036400000000001
+[188.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[189.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[190.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[190.593] /ctl_only: /ctl/command: Succeeded
+[191.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[192.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0022638000000000003
+[193.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0022638000000000003
+[194.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: 0.0021991200000000006
+[195.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.00213444
+z: 0.0021991200000000006
+[196.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0021991200000000006
+[197.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0021991200000000006
+[198.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0021991200000000006
+[199.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0021991200000000006
+[200.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0021991200000000006
+[201.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[202.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[203.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[204.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[205.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[206.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[207.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[208.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.0019404000000000001
+z: 0.0021991200000000006
+[209.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[210.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[211.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[212.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.00213444
+[213.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.00213444
+[214.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.00213444
+[215.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.00213444
+[216.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.00213444
+[217.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[217.248] /ctl_only: /ctl/command: Succeeded
+[218.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.00213444
+[219.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.00213444
+[220.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.00213444
+[221.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.00213444
+z: 0.00213444
+[222.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0021991200000000006
+[223.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023930522
+y: 0.00213444
+z: 0.0021991200000000006
+[224.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023930522
+y: 0.00213444
+z: 0.0021991200000000006
+[225.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0024577322000000007
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[226.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0031691828000000003
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[227.000] /krpc_gravity_module: call_gravity_parameter: x: -0.003492573
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[228.000] /krpc_gravity_module: call_gravity_parameter: x: -0.003557243200000001
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[229.000] /krpc_gravity_module: call_gravity_parameter: x: -0.002522412200000001
+y: 0.0020697600000000003
+z: 0.0022638000000000003
+[230.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0027164424
+y: 0.0020050800000000002
+z: 0.0022638000000000003
+[231.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0032338628000000004
+y: 0.0019404000000000001
+z: 0.0022638000000000003
+[232.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0032985330000000006
+y: 0.0019404000000000001
+z: 0.0022638000000000003
+[233.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0028457926000000004
+y: 0.0019404000000000001
+z: 0.0023284800000000004
+[234.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0024577322000000007
+y: 0.0020050800000000002
+z: 0.0022638000000000003
+[235.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0024577322000000007
+y: 0.0020050800000000002
+z: 0.0022638000000000003
+[236.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0033632130000000003
+y: 0.0020050800000000002
+z: 0.0021991200000000006
+[237.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0034278930000000004
+y: 0.0020697600000000003
+z: 0.0021991200000000006
+[238.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0032338628000000004
+y: 0.0020697600000000003
+z: 0.00213444
+[239.000] /krpc_gravity_module: call_gravity_parameter: x: -0.0027811224000000006
+y: 0.0020697600000000003
+z: 0.00213444
+[240.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023930522
+y: 0.0020697600000000003
+z: 0.00213444
+[241.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002522412200000001
+y: 0.00213444
+z: 0.00213444
+[242.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023930522
+y: 0.00213444
+z: 0.0021991200000000006
+[243.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.00213444
+z: 0.00213444
+[244.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.00213444
+[244.147] /ctl_only: /ctl/command: Succeeded
+[245.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.00213444
+[246.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.00213444
+[247.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0021991200000000006
+[248.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: 0.0021991200000000006
+[249.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: -0.0028420000000000003
+[250.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: -0.033516000000000004
+[251.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0021991200000000006
+z: -0.011998924000000001
+[252.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: -0.006031674600000001
+[253.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: -0.0033679954000000005
+[254.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0024577322000000007
+y: 0.00213444
+z: -0.0024500000000000004
+[255.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0025870922
+y: 0.00213444
+z: 0.00213444
+[256.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002522412200000001
+y: 0.00213444
+z: 0.00213444
+[257.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023930522
+y: 0.0021991200000000006
+z: 0.0020697600000000003
+[258.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0023930522
+y: 0.0021991200000000006
+z: 0.0020697600000000003
+[259.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002199022
+y: 0.00213444
+z: 0.0020697600000000003
+[260.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[261.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[262.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0022637020000000002
+y: 0.0020050800000000002
+z: 0.0020050800000000002
+[263.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002522412200000001
+y: 0.0020050800000000002
+z: 0.0020050800000000002
+[264.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0025870922
+y: 0.0020050800000000002
+z: 0.0020697600000000003
+[265.000] /krpc_gravity_module: call_gravity_parameter: x: 0.002522412200000001
+y: 0.0019404000000000001
+z: 0.0020697600000000003
+[266.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0019404000000000001
+z: 0.0020697600000000003
+[267.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0019404000000000001
+z: 0.0020697600000000003
+[268.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[269.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[270.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0019404000000000001
+z: 0.0020050800000000002
+[271.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.0020050800000000002
+z: 0.0020050800000000002
+[272.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.0020050800000000002
+z: 0.0019404000000000001
+[273.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020050800000000002
+z: 0.0019404000000000001
+[274.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020050800000000002
+z: 0.0020050800000000002
+[275.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[276.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[277.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0020697600000000003
+z: 0.0020050800000000002
+[278.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.0020697600000000003
+z: 0.0019404000000000001
+[279.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.00213444
+z: 0.0020050800000000002
+[280.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0019403118000000004
+y: 0.00213444
+z: 0.0020050800000000002
+[281.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020050800000000002
+[282.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020696718000000006
+y: 0.00213444
+z: 0.0020697600000000003
+[283.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: 0.0020697600000000003
+[284.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: -0.0028420000000000003
+[285.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0021343518000000003
+y: 0.00213444
+z: -0.01862
+[286.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: -0.01862
+[286.210] /ctl_only: /ctl/command: Succeeded
+[287.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.00213444
+z: 0.0020697600000000003
+[288.000] /krpc_gravity_module: call_gravity_parameter: x: 0.0020049918000000005
+y: 0.0021991200000000006
+z: 0.0019404000000000001
+[288.439] /krpc_gravity_module: gsdata_callback() start: data: "{\"status\": \"Mission Finish\"}"
+[288.439] /krpc_gravity_module: gravity timer finish.
+[288.439] /krpc_gravity_module: receive status:Mission Finish
+[289.000] /krpc_gravity_module: completed_flg is True. call_gravity_service() break.
