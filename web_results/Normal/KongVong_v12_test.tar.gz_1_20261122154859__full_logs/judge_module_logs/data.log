@@ -1,0 +1,9 @@
+{'status': 'Mission Start', 'timestamp': '19700101 000011575'}
+{'status': 'CheckPointPassed', 'timestamp': '19700101 000106487', 'checkpoint_id': 11, 'success': True, 'reason': 'checkpoint validated'}
+{'status': 'CheckPointPassed', 'timestamp': '19700101 000139390', 'checkpoint_id': 10, 'success': True, 'reason': 'checkpoint validated'}
+{'status': 'CheckPointPassed', 'timestamp': '19700101 000215873', 'checkpoint_id': 8, 'success': True, 'reason': 'checkpoint validated'}
+{'status': 'CheckPointPassed', 'timestamp': '19700101 000248295', 'checkpoint_id': 3, 'success': True, 'reason': 'checkpoint validated'}
+{'status': 'CheckPointPassed', 'timestamp': '19700101 000319459', 'checkpoint_id': 2, 'success': True, 'reason': 'checkpoint validated'}
+{'status': 'CheckPointPassed', 'timestamp': '19700101 000350074', 'checkpoint_id': 1, 'success': True, 'reason': 'checkpoint validated'}
+{'status': 'CheckPointPassed', 'timestamp': '19700101 000425704', 'checkpoint_id': 12, 'success': True, 'reason': 'checkpoint validated'}
+{'status': 'Mission Finish', 'timestamp': '19700101 000425719'}
