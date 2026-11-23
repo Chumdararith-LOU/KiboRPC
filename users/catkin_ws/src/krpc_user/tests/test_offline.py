@@ -197,10 +197,45 @@ def test_planner_speed():
     print("planner: 11 stops + goal planned in %.2f s (estimated mission %.0f s)" % (dt, est))
 
 
+def test_score_planner_is_optimal(trials=60):
+    """v1.8: plan_route_score equals brute force over every subset and order."""
+    import itertools
+    rng = random.Random(7)
+    model = planner.MotionModel(accel=0.010, v_max=0.20, ang_accel=0.18, w_max=0.4363, settle=3.0)
+    for trial in range(trials):
+        n = rng.randint(1, 6)
+        pt = lambda: [rng.uniform(0.2, 7.0), rng.uniform(-0.8, 0.85), rng.uniform(0.0, 1.68)]
+        stops = [(k + 1, pt(), random_rotation(180, rng)) for k in range(n)]
+        goal = (12, pt(), random_rotation(180, rng))
+        start = ([0.2, 0, 0], list(g.IDENTITY))
+        limit, reserve, pad, gf = rng.uniform(60, 220), 6.0, 1.03, 1.15
+        order, fin, score = planner.plan_route_score(start, stops, goal, model, limit, reserve, pad, gf)
+        def mt(a, b):
+            return model.move_time(a[0], a[1], b[0], b[1])
+        gnode = (goal[1], goal[2])
+        best = planner.mission_score(1, n == 0, gf * mt(start, gnode))
+        for r in range(1, n + 1):
+            for sub in itertools.permutations(stops, r):
+                t, cur, ok = 0.0, start, True
+                for s in sub:
+                    node = (s[1], s[2])
+                    if t + pad * (mt(cur, node) + gf * mt(node, gnode)) + reserve > limit:
+                        ok = False
+                        break
+                    t += mt(cur, node)
+                    cur = node
+                fin2 = t + gf * mt(cur, gnode)
+                if ok and pad * fin2 + reserve <= limit:
+                    best = max(best, planner.mission_score(r + 1, r == n, fin2))
+        assert abs(best - score) < 1e-6, (trial, best, score)
+    print("score planner: equals brute force on %d random courses" % trials)
+
+
 if __name__ == "__main__":
     Referee = load_referee_class()
     test_scorer_matches_judge(Referee)
     test_aim_fix()
     test_planner_is_optimal()
     test_planner_speed()
+    test_score_planner_is_optimal()
     print("ALL TESTS PASSED")

@@ -19,12 +19,24 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = os.path.join(HERE, "..", "scripts")
 sys.path.insert(0, SCRIPTS)
 sys.path.insert(0, HERE)
+sys.path.insert(0, os.path.join(HERE, "..", "sim"))
 import geometry as g  # noqa: E402
 import planner  # noqa: E402
 import scorer  # noqa: E402
+from ib2sim import IB2Sim  # noqa: E402  (v2.0: physics for /ctl/wrench flight)
 
 QUIET = "--quiet" in sys.argv
 ARRIVAL_ERR = "--err" in sys.argv
+GOAL_SLOW = 1.0                # --goal-slow=1.15: every leg to the goal takes longer (web W2/W3)
+NO_FAN = "--no-fan" in sys.argv
+KPR = "--kpr" in sys.argv      # copy the web's keep_pose_release: 8 ms after our first command
+                               # after Mission Start, JAXA's controller is woken up (KEEP_POSE)
+DIST_F = 0.002                 # --push=0.01: constant disturbance force [N] in fan (physics) mode
+for _a in sys.argv:
+    if _a.startswith("--goal-slow="):
+        GOAL_SLOW = float(_a.split("=", 1)[1])
+    if _a.startswith("--push="):
+        DIST_F = float(_a.split("=", 1)[1])
 
 
 # ---------------------------------------------------------------------------
@@ -79,8 +91,59 @@ class World(object):
         self.hold_s = 1.0             # sim v1.2: the judge holds every report for 1 s
         self.goal_result = None       # (success, reason) from the v1.2 goal rule
         self.aborts = 0
+        # v2.0: physics for /ctl/wrench flight, JAXA controller state, async judge
+        self.phys = IB2Sim(seed=seed, dist_force=DIST_F)
+        self.mode = "kin"             # "kin": JAXA controller moves/holds the robot; "wrench": our pushes
+        self.ctl_type = 10            # KEEP_POSE until told otherwise
+        self.kpr_at = None
+        self.kpr_done = False
+        self.ignored_wrench = 0
+        self.next_status = 0.0
+        self.eval = None              # pending checkpoint hold: dict
+        self.finish_eval = None       # pending goal hold at mission finish
+        self.last_nav = ([0.2, 0.0, 0.0], list(g.IDENTITY))
 
     # controller ---------------------------------------------------------
+    def ctl_goal(self, goal):
+        kind = goal.type.type
+        if self.kpr and not self.kpr_done and self.mission_start is not None and self.kpr_at is None:
+            self.kpr_at = self.t + 0.008
+        if kind == 0:                                   # STAND_BY: JAXA controller goes quiet
+            self.goal = None
+            self.result = 0
+            self.ctl_type = 0
+            if self.mode != "wrench":
+                self.mode = "wrench"
+                self.phys.command([0.0, 0.0, 0.0], [0.0, 0.0, 0.0])
+            return
+        if kind < 20:                                   # KEEP_POSE: JAXA holds where it is
+            self._to_kin()
+            self.goal = None
+            self.result = 0
+            self.ctl_type = 10
+            return
+        self._to_kin()
+        self.ctl_type = kind
+        p = goal.target.pose.position
+        o = goal.target.pose.orientation
+        self.start_move([p.x, p.y, p.z], [o.x, o.y, o.z, o.w])
+
+    def _to_kin(self):
+        if self.mode == "wrench":
+            p, v, q, w = self.phys.truth()
+            self.pos, self.q = p, q
+            self.mode = "kin"
+
+    def on_wrench(self, F, T):
+        if self.mode == "wrench":
+            self.phys.command(F, T)
+        else:
+            self.ignored_wrench += 1
+
+    @property
+    def kpr(self):
+        return KPR
+
     def start_move(self, p1, q1):
         if self.arrival_err:
             e = [max(-0.02, min(0.02, self.rng.gauss(0, 0.008))) for _ in range(3)]
@@ -99,6 +162,9 @@ class World(object):
         f = self.slow_plan.get(self.moves, 1.0)
         self.goal["tt"] *= f
         self.goal["tr"] *= f
+        gpos = self.specs[self.payload["goalpoint_id"]].position
+        if g.distance(p1, gpos) < 0.12:
+            self.goal["tt"] *= GOAL_SLOW     # web goal legs: the long flight runs slow, not the turn
 
     def cancel_move(self):
         if self.goal is not None:
@@ -115,6 +181,57 @@ class World(object):
                 return
 
     def _tick(self):
+        if self.kpr_at is not None and not self.kpr_done and self.t >= self.kpr_at:
+            self.kpr_done = True
+            self._to_kin()
+            self.ctl_type = 10
+            if self.goal is not None:
+                self.goal = None
+                self.result = 1
+        if self.t >= self.next_status:
+            self.next_status = self.t + 0.1
+            cb = self.subs.get("/ctl/status")
+            if cb:
+                cb(Msg(type=Msg(type=self.ctl_type)))
+        self._judge_tick()
+        if self.mode == "wrench":
+            self.phys.step(self.DT)
+            self.t = self.phys.t
+            p, v, q, w = self.phys.truth()
+            self.pos, self.q = p, q
+            if self.t >= self.next_nav:
+                self.next_nav = self.t + 0.05
+                np_, nv, nq, nw = self.phys.nav()
+                self.last_nav = (np_, nq)
+                cb = self.subs.get("/sensor_fusion/navigation")
+                if cb:
+                    cb(Msg(pose=Msg(pose=Msg(position=Msg(x=np_[0], y=np_[1], z=np_[2]),
+                                             orientation=Msg(x=nq[0], y=nq[1], z=nq[2], w=nq[3]))),
+                           twist=Msg(linear=Msg(x=nv[0], y=nv[1], z=nv[2]),
+                                     angular=Msg(x=nw[0], y=nw[1], z=nw[2]))))
+            return
+        self._kin_tick()
+        # keep the physics model on the kinematic robot (so a later hand-over starts from here)
+        self.phys.p, self.phys.q = list(self.pos), list(self.q)
+        self.phys.v, self.phys.w = [0.0, 0.0, 0.0], [0.0, 0.0, 0.0]
+        self.phys.t = self.t
+        self.phys.hist.append((self.t, list(self.pos), [0.0, 0.0, 0.0], list(self.q), [0.0, 0.0, 0.0]))
+        while self.phys.hist and self.phys.hist[0][0] < self.t - 0.3:
+            self.phys.hist.popleft()
+        self.last_nav = (list(self.pos), list(self.q))
+
+    def _judge_tick(self):
+        for ev in (self.eval, self.finish_eval):
+            if ev is None or ev.get("done"):
+                continue
+            if self.t >= ev["nxt"]:
+                ev["nxt"] = self.t + 1.0 / 30.0
+                ev["worst"] = min(ev["worst"], scorer.evaluate(self.last_nav[0], self.last_nav[1], ev["spec"])["level"])
+            if self.t >= ev["end"]:
+                ev["done"] = True
+                ev["finish"](ev["worst"])
+
+    def _kin_tick(self):
         old_p, old_q = list(self.pos), list(self.q)
         gl = self.goal
         if gl is not None and gl.get("abort_after") is not None and self.t - gl["t0"] >= gl["abort_after"]:
@@ -185,11 +302,16 @@ class World(object):
         spec = self.specs.get(cp_id)
         if spec is None:
             return False, "unknown checkpoint_id: %d" % cp_id
-        level = self.hold_level(spec)
-        if level <= 0:
-            return False, "checkpoint left outermost margin"
-        self.reports[cp_id] = (self.t - self.mission_start, level)
-        return True, "checkpoint accepted: band=%d" % level
+        return None, spec          # v2.0: evaluated over the next hold_s while the node keeps flying
+
+    def start_eval(self, cp_id, spec, client):
+        def finish(level):
+            if level <= 0:
+                client.done(False, "checkpoint left outermost margin")
+            else:
+                self.reports[cp_id] = (self.t - self.mission_start, level)
+                client.done(True, "checkpoint accepted: band=%d" % level)
+        self.eval = dict(spec=spec, end=self.t + self.hold_s, nxt=self.t, worst=3, finish=finish)
 
 
 def slerp(a, b, f):
@@ -250,6 +372,16 @@ def install_fakes():
         return call
 
     rospy.ROSException = ROSException
+
+    class Publisher(object):
+        def __init__(self, topic, _type, queue_size=1):
+            self.topic = topic
+
+        def publish(self, msg):
+            if self.topic == "/ctl/wrench":
+                f, t = msg.wrench.force, msg.wrench.torque
+                WORLD.on_wrench([f.x, f.y, f.z], [t.x, t.y, t.z])
+    rospy.Publisher = Publisher
     class ROSInterruptException(Exception):
         pass
     rospy.ROSInterruptException = ROSInterruptException
@@ -292,15 +424,22 @@ def install_fakes():
 
         def send_goal(self, goal):
             if self.name == "/ctl/command":
-                p = goal.target.pose.position
-                o = goal.target.pose.orientation
-                WORLD.start_move([p.x, p.y, p.z], [o.x, o.y, o.z, o.w])
+                WORLD.ctl_goal(goal)
             else:
                 ok, message = WORLD.judge_report(goal.checkpoint_id)
-                self.cp_result = Msg(success=ok, message=message)
+                if ok is None:
+                    self.pending = True
+                    WORLD.start_eval(goal.checkpoint_id, message, self)
+                else:
+                    self.pending = False
+                    self.cp_result = Msg(success=ok, message=message)
+
+        def done(self, ok, message):
+            self.pending = False
+            self.cp_result = Msg(success=ok, message=message)
 
         def _done(self):
-            return WORLD.result is not None if self.name == "/ctl/command" else True
+            return WORLD.result is not None if self.name == "/ctl/command" else not getattr(self, "pending", False)
 
         def wait_for_result(self, timeout=None):
             if self._done():
@@ -364,6 +503,8 @@ def install_fakes():
         ERROR = 255
 
     class CtlStatusType(Msg):
+        STAND_BY = 0
+        KEEP_POSE = 10
         MOVE_TO_ABSOLUTE_TARGET = 40
         MOVE_TO_RELATIVE_TARGET = 30
         STOP_MOVING = 20
@@ -379,11 +520,14 @@ def install_fakes():
         pkg(n)
     pkg("platform_msgs.msg", UserLogic=Msg)
     pkg("platform_msgs.srv", StopProcessingUserNode=Msg, StopProcessingUserNodeResponse=StopResp)
-    pkg("geometry_msgs.msg", PoseStamped=pose_stamped)
+    def wrench_stamped():
+        return Msg(header=Msg(frame_id="", stamp=None),
+                   wrench=Msg(force=Msg(x=0.0, y=0.0, z=0.0), torque=Msg(x=0.0, y=0.0, z=0.0)))
+    pkg("geometry_msgs.msg", PoseStamped=pose_stamped, WrenchStamped=wrench_stamped)
     pkg("krpc_ib2_msgs.srv", MissionStart=Msg, MissionFinished=Msg, CheckPoints=Msg)
     pkg("krpc_ib2_msgs.msg", CheckpointPassedAction=Msg, CheckpointPassedGoal=Msg)
     pkg("ib2_msgs.msg", CtlCommandAction=Msg, CtlCommandGoal=Msg, CtlCommandResult=CtlCommandResult,
-        CtlStatusType=CtlStatusType, Navigation=Msg)
+        CtlStatusType=CtlStatusType, Navigation=Msg, CtlStatus=Msg)
 
 
 def install_services():
@@ -399,15 +543,18 @@ def install_services():
             return Msg(success=True, message="accepted")   # judge ignores it
         WORLD.mission_finish = WORLD.t
         gid = WORLD.payload["goalpoint_id"]
-        level = WORLD.hold_level(WORLD.specs[gid])     # sim v1.2: 1 s hold at finish
-        missing = [c["checkpoint_id"] for c in WORLD.payload["checkpoints"]
-                   if c["checkpoint_id"] not in WORLD.reports]
-        if level <= 0:
-            WORLD.goal_result = (False, "checkpoint left outermost margin")
-        elif missing:
-            WORLD.goal_result = (False, "checkpoints not passed: %s" % ",".join(str(m) for m in missing))
-        else:
-            WORLD.goal_result = (True, "checkpoint validated")
+
+        def finish_goal(level):                          # sim v1.2: 1 s hold at finish
+            missing = [c["checkpoint_id"] for c in WORLD.payload["checkpoints"]
+                       if c["checkpoint_id"] not in WORLD.reports]
+            if level <= 0:
+                WORLD.goal_result = (False, "checkpoint left outermost margin")
+            elif missing:
+                WORLD.goal_result = (False, "checkpoints not passed: %s" % ",".join(str(m) for m in missing))
+            else:
+                WORLD.goal_result = (True, "checkpoint validated")
+        WORLD.finish_eval = dict(spec=WORLD.specs[gid], end=WORLD.t + WORLD.hold_s, nxt=WORLD.t, worst=3,
+                                 finish=finish_goal)
         return Msg(success=True, message="accepted")
 
     WORLD.services["/event/mission_start"] = start
@@ -430,8 +577,13 @@ def run(repo, level, seed, judge_delay=0.0, abort_plan=None, slow_plan=None):
     for mod in ("user_template", "judge_link"):
         sys.modules.pop(mod, None)
     import user_template
+    if NO_FAN:
+        user_template.FAN_MODE = False
     node = user_template.UserTemplate()
     node.run()
+    t_end = WORLD.t + 2.0
+    while WORLD.finish_eval is not None and not WORLD.finish_eval.get("done") and WORLD.t < t_end:
+        WORLD.step(World.DT)
     dur = (WORLD.mission_finish - WORLD.mission_start) if WORLD.mission_finish else None
     levels = [WORLD.reports.get(c["checkpoint_id"], (None, 0))[1] for c in payload["checkpoints"]]
     goal_ok = WORLD.goal_result if WORLD.goal_result else (False, "no mission_finished")
@@ -456,5 +608,9 @@ if __name__ == "__main__":
                     k, v = item.split(":")
                     target[int(k)] = float(v)
     dur, levels, goal_ok = run(repo, level, seed, delay, plan, slow)
-    print("RESULT level=%s seed=%d duration=%s levels=%s goal=%s aborts=%d" % (
-        level, seed, "%.1f" % dur if dur else None, levels, goal_ok, WORLD.aborts))
+    score = None
+    if dur:
+        score = (10 * sum(1 for x in levels if x == 3) + (30 if goal_ok[0] else 0)) * (1 + (300 - dur) / 300.0)
+    print("RESULT level=%s seed=%d duration=%s levels=%s goal=%s aborts=%d score=%s" % (
+        level, seed, "%.1f" % dur if dur else None, levels, goal_ok, WORLD.aborts,
+        "%.1f" % score if score is not None else None))

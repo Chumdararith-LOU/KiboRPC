@@ -28,12 +28,13 @@ from ib2_msgs.msg import CtlCommandAction, CtlCommandGoal, CtlCommandResult, Ctl
 from ib2_msgs.msg import Navigation  # noqa: E402
 
 import geometry as g  # noqa: E402
+import fanmode  # noqa: E402
 import judge_link  # noqa: E402
 import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v1.8 2026-11-22"
+VERSION = "v2.0 2026-11-23"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -68,6 +69,13 @@ NAV_STALE_S = 1.0
 LOOP_HZ = 20.0
 JUDGE_WAIT_S = 45.0         # E6: never announce Mission Start before the judge listens
 NO_JUDGE_WAIT_S = 5.0       # if no judge is visible at all, do not stall the run
+
+# v2.0: fly with our own controller (fanmode.py / fanctl.py) through /ctl/wrench; JAXA's
+# controller (/ctl/command) stays as the fallback if anything looks wrong.
+FAN_MODE = True
+FAN_PAD = 1.05              # planner padding for our controller's leg times (offline sim: real/plan 0.96)
+FAN_GOAL_FACTOR = 1.0
+FAN_MODEL = fanmode.FanModel()
 
 MODEL = planner.MotionModel(accel=0.010, v_max=0.20, ang_accel=0.18, w_max=0.4363,
                             settle=3.0)
@@ -113,6 +121,8 @@ class UserTemplate:
         self.__finished_sent = False
         self.__goal_spec = None
         self.__hard_stop = HARD_STOP_S
+        self.__mission_started = False
+        self.__fan = fanmode.FanPilot(self.__command, self.__checkpoint_client, self.__fan_nav)
         rospy.set_param('/ib2_user/ready', True) # DO NOT REMOVE THIS LINE
         rospy.loginfo('krpc_user %s ready', VERSION)
 
@@ -132,6 +142,14 @@ class UserTemplate:
             self.__nav_hist.append((now, self.__nav[0], self.__nav[1]))
             while self.__nav_hist and now - self.__nav_hist[0][0] > 2.0:
                 self.__nav_hist.popleft()
+        if not self.__mission_started:
+            self.__fan.note_velocity([v.x, v.y, v.z])     # docked and still: learns the nav velocity bias
+
+    def __fan_nav(self):
+        with self.__nav_lock:
+            if self.__nav is None:
+                return None
+            return self.__nav[0], self.__nav[1], self.__nav[2], self.__nav[3], self.__nav_stamp
 
     def __pose(self):
         """Latest (position, quaternion, velocity, angular velocity), or None if stale."""
@@ -432,6 +450,7 @@ class UserTemplate:
             rospy.loginfo('[%6.1f s] start-up took %.1f s; mission clock restarts at Mission Start',
                           self.__elapsed(), self.__elapsed())
             self.__t0 = rospy.get_time()
+            self.__mission_started = True
             res = self.__call_service('/event/mission_start', self.__mission_start)
             self.__probe.mark('mission_start returned')
             started = True
@@ -447,6 +466,8 @@ class UserTemplate:
         except Exception as exc:
             rospy.logerr('user flow failed: %s', exc)
         finally:
+            if self.__fan.active:
+                self.__fan.release()
             self.__cancel_move()
             if not started:
                 self.__call_service('/event/mission_start', self.__mission_start)
@@ -501,10 +522,14 @@ class UserTemplate:
         start = (nav[0], nav[1])
         # v1.8: the subset with the highest expected official score that fits the budget
         # (same feasibility rule as "go home"), timed from Mission Start, which comes next.
+        if FAN_MODE:
+            model, pad, gf = FAN_MODEL, FAN_PAD, FAN_GOAL_FACTOR
+        else:
+            model, pad, gf = MODEL, GO_HOME_FACTOR, GOAL_LEG_FACTOR
         order, est, score = planner.plan_route_score(
             start, [(s.id, s.position, s.target_q) for s in stops],
-            (goal.id, goal.position, goal.target_q), MODEL,
-            TIME_LIMIT_S, GO_HOME_RESERVE_S, GO_HOME_FACTOR, GOAL_LEG_FACTOR, t_start=0.0)
+            (goal.id, goal.position, goal.target_q), model,
+            TIME_LIMIT_S, GO_HOME_RESERVE_S, pad, gf, t_start=0.0)
         skipped = [s.id for s in stops if s.id not in order]
         rospy.loginfo('[%6.1f s] route %s, expected finish %.0f s after Mission Start, '
                       'expected score %.1f, planned skips %s', self.__elapsed(), order, est, score, skipped)
@@ -514,19 +539,52 @@ class UserTemplate:
         by_id = dict((s.id, s) for s in stops)
         self.__goal_spec = goal
         levels = {}
+        fan = FAN_MODE and self.__fan.engage()
+        if FAN_MODE and not fan:
+            rospy.logwarn('[%6.1f s] fan mode could not take over; flying with JAXA\'s controller', self.__elapsed())
         for cp_id in order[:-1]:
             self.__check_abort()
             spec = by_id[cp_id]
             nav = self.__wait_for_nav()
-            need = (MODEL.move_time(nav[0], nav[1], spec.position, spec.target_q)
-                    + GOAL_LEG_FACTOR * MODEL.move_time(spec.position, spec.target_q, goal.position, goal.target_q))
-            if self.__elapsed() + GO_HOME_FACTOR * need + GO_HOME_RESERVE_S > TIME_LIMIT_S:
+            if fan:
+                model, pad, gf = FAN_MODEL, FAN_PAD, FAN_GOAL_FACTOR
+            else:
+                model, pad, gf = MODEL, GO_HOME_FACTOR, GOAL_LEG_FACTOR
+            need = (model.move_time(nav[0], nav[1], spec.position, spec.target_q)
+                    + gf * model.move_time(spec.position, spec.target_q, goal.position, goal.target_q))
+            if self.__elapsed() + pad * need + GO_HOME_RESERVE_S > TIME_LIMIT_S:
                 rospy.logwarn('[%6.1f s] go home: cp %d needs %.0f s more', self.__elapsed(), cp_id, need)
                 break
-            levels[cp_id] = self.__visit(spec)
+            fan, levels[cp_id] = self.__visit_any(spec, fan, False)
         self.__hard_stop = GOAL_HARD_STOP_S     # v1.6: let a late goal leg finish
-        levels[goal.id] = self.__visit(goal, is_goal=True)
+        fan, levels[goal.id] = self.__visit_any(goal, fan, True)
         rospy.loginfo('[%6.1f s] levels %s', self.__elapsed(), levels)
+        if fan:
+            # Report the finish while still holding: the judge checks the goal pose for 1 s after it.
+            self.__finish()
+            try:
+                self.__fan.hold(fanmode.FINISH_HOLD_S, self.__check_abort)
+            except (fanmode.FanAbort, MissionAbort) as exc:
+                rospy.logwarn('[%6.1f s] hold after finish ended: %s', self.__elapsed(), exc)
+            self.__fan.release()
+
+    def __visit_any(self, spec, fan, is_goal):
+        """v2.0: our controller when it is in charge; on any trouble hand back to JAXA's."""
+        if fan:
+            try:
+                level, _msg = self.__fan.visit(spec, self.__check_abort, self.__elapsed,
+                                               'goal' if is_goal else 'checkpoint')
+                if level > 0:
+                    return True, level
+                rospy.logwarn('[%6.1f s] cp %d not accepted in fan mode; retrying with JAXA\'s controller',
+                              self.__elapsed(), spec.id)
+            except fanmode.FanAbort as exc:
+                rospy.logwarn('[%6.1f s] fan mode stopped: %s; handing back to JAXA\'s controller',
+                              self.__elapsed(), exc)
+            self.__fan.release(keep_pose=True)
+            rospy.sleep(0.5)
+            fan = False
+        return fan, self.__visit(spec, is_goal=is_goal)
 
     def __wait_for_nav(self):
         rate = rospy.Rate(LOOP_HZ)
@@ -558,6 +616,8 @@ class UserTemplate:
     def __stop_processing(self, request):
         try:
             self.__stop_requested = True
+            if self.__fan.active:
+                self.__fan.release()
             if self.__action_active:
                 self.__command.cancel_goal()
                 self.__command.wait_for_result(rospy.Duration(CANCEL_WAIT_S))
