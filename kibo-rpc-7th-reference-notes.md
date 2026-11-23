@@ -75,6 +75,21 @@ Example bands from the API (per checkpoint, read from the response, don't hard-c
 
 Manual tip: first secure CheckPoints Passed + Goal Reached, then maximise Time Bonus.
 
+**Web scorer, measured 2026-11-22** (dashboard of the three v1.6 runs, simulator 1.2, course "Regular"):
+
+| Run | Passed | Goal | Mission Time (= judge `duration_sec`, Mission Start → Mission Finish) | Time Bonus | Final Score |
+|---|---|---|---|---|---|
+| Normal | 8/8 Lv3 | Reached (+30) | 234.35 s | ×1.22 | 134.10 |
+| Hard | 8/10 Lv3 | Failed | 250.57 s | ×1.17 | 93.20 |
+| Very hard | 9/12 Lv3 | Failed | 260.25 s | ×1.13 | 102.00 |
+
+- **Lv3 checkpoint = 10 pt** (the goal checkpoint CP12 also scores its 10 pt). Lv2 / Lv1 values not yet seen.
+- **Goal Score = 30 pt**, only when every checkpoint passed and the goal is reached.
+- **Time Bonus ≈ 1 + (300 − T) / 300**, with T measured from **Mission Start** (not the start signal). It fits all three runs within 0.1 pt; at T = 0 it is 2.0, matching "max ≈ 2×".
+- **Final Score = (Σ checkpoint points + goal points) × Time Bonus.**
+- Consequences: a second saved is worth S/300 pt (0.37 pt/s on a perfect Normal run). On Hard/Very hard (no goal), an extra checkpoint pays only if it costs less than about 3000·M/(S+10) s, about 35–39 s. A skipped checkpoint on Normal costs 10 + 30 pt.
+- The dashboard marks checkpoints not in the course as N/A, and in-course checkpoints not passed as FAIL.
+
 ---
 
 ## 4. Coordinates (origin = docking station)
@@ -288,4 +303,24 @@ Files changed: `judge.py` (+372/−117), `krpc_api_node.py`, `cheat_sheet_loader
 | Hard (10) | median 317 s (301–333) | 0/30 |
 | Very hard (12) | median 368 s (357–378) | 0/30 |
 
+(See §12 for the fan system, which our own controller in v2.0 uses to get past this.)
+
 With the stock controller, Pt_goal is out of reach on Hard (needs about 5–10% faster) and Very hard (needs about 20% faster). Whether that matters depends on the unknown sizes of Pt_goal and Mag_clear (and whether Mag_clear needs the goal), which the web results should reveal.
+
+---
+
+## 12. The fan system and /ctl/wrench (from JAXA's source, 2026-11-23)
+
+Sources: `int-ball2_simulator` `ctl_only/ctl.yaml` (`fan`), `fsm/src/fsm.cpp`, `fsm/src/thrust_allocator.cpp`, `ctl_only/src/ctl.cpp`, `pos_att_profiler.cpp`; team repo `sim.yaml` (`thr_parameter`, `nav_parameter`); `ib2.urdf`.
+
+**Pipeline:** `/ctl/wrench` (body-frame force N, torque N·m) → `fsm` node: fan forces f = Wp·y⁺ + Wm·y⁻, then minus the smallest (fans cannot push backwards; a negative value becomes positive through |f|), pwm = 4.0825·√f → **saturation rule:** if 4 or more fans exceed PWM 1.0, the 4 largest go to full and **all others switch off**; else clip → `/ctl/duty` → `prop` → `/prop/status` → fan plugin: force = min((pwm/4.0825)², 0.06 N), 0.01 s lag, noise N(0, 0.2·f) → body wrench Σ f·vec, Σ f·(r × vec). The fans hold the last command until a new wrench arrives.
+
+**Capability (no torque):** along the nose (±x) 0.181 N; y 0.0996 N; z 0.122 N; typical direction 0.082 N; weakest 0.071 N. Torque: x 3.03, y 4.55, z 8.19 mN·m. Force and torque share the same fans.
+
+**Body:** mass 3.216 kg; inertia diag(0.01362, 0.01400, 0.01306) kg·m² (ib2.urdf); CG offset about 1.5 mm.
+
+**Navigation (sim.yaml):** 0.1 s delay; position bias (−2.1, −1.8, −0.07) mm + 0.85 mm noise; velocity bias (−5.6, −4.3, 0.24) mm/s + 1.5 mm/s noise; attitude about 0.01°. `twist.linear` is world frame, `twist.angular` body frame (as JAXA's controller uses them).
+
+**Handover:** a `/ctl/command` goal of type STAND_BY (0) puts JAXA's controller on standby: it publishes one zero wrench and then nothing, and clears its collision detector each cycle. KEEP_POSE (10) makes it hold the current pose again. `/ctl/status` (10 Hz) reports its state in `type.type`. The Programming Manual allows `/ctl/wrench` ("more seamless movement", the program must manage stopping itself).
+
+**Web-only nodes (from a v1.7 rosbag):** `keep_pose_release` sends its own `/ctl/command` goal 8 ms after our first command following Mission Start (this preempts our first move); a gravity/disturbance module of unknown strength. Neither exists in the local package.
