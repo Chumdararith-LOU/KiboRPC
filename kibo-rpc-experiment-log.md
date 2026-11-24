@@ -21,8 +21,26 @@ Measured results from Gazebo and Web simulator runs. These numbers replace the e
 | W7-N | v2.1 | Normal | **8 / 8** | **yes** | 201.4 s (146.2 pt) |
 | W7-H | v2.1 | Hard | **10 / 10** | **yes** | 198.7 s (173.9 pt) |
 | W7-V | v2.1 | Very hard | **12 / 12** | **yes** | 241.2 s (179.4 pt) |
+| W8-N | v2.2 | Normal | **8 / 8** | **yes** | 189.1 s (150.7 pt) |
+| W8-H | v2.2 | Hard | **10 / 10** | **yes** | 235.3 s (158.0 pt) |
+| W8-V | v2.2 | Very hard | **12 / 12** | **yes** | 233.0 s (**183.5 pt**) |
 
 Dashboard "Final Score" values: not yet collected (needed to fit points per level, Pt_goal and the time multiplier).
+
+## W8 — Web simulator, v2.2 on Normal / Hard / Very hard, 2026-11-24 (branch `sim-v1.2`)
+
+**Second consecutive perfect web sweep (30/30 Lv3, 3/3 goals) with record score on Very Hard (183.5 pt).**
+
+| Level | Plan (expected finish / score) | Actual (judge) | Score | Key Observation |
+|---|---|---|---|---|
+| Normal | 178 s / 154.6 | **189.07 s** | **150.67 pt** | **−12.34 s faster than v2.1**; dynamic braking speed cut pulse return overhead |
+| Hard | 200 s / 173.3 | **235.28 s** | **158.05 pt** | Absorbed massive 0.785 m pulse on leg to CP8 with zero bailouts (`TRACK_POS_FAIL_M = 2.0`) |
+| Very hard | 233 s / 183.6 | **232.98 s** | **183.51 pt** | **New all-time record score!** −8.18 s faster than v2.1; all 12 CPs Lv3 in 233 s |
+
+- **Rosbag Probe Telemetry (`web_results/...__probe/`):**
+  - **Overload Rule Tripping:** **0 occurrences** across all runs. Peak fan duty strictly capped at `0.975`.
+  - **Flight Continuity:** `/ctl_only` published 0 wrenches during flight in all three runs.
+  - **Transient Recovery:** On Hard CP8, maximum tracking displacement reached 0.785 m (which would have aborted in v2.0); v2.2 rapidly and smoothly recovered using the parabolic braking approach curve without overshoot, locking in a clean Level 3 pass.
 
 ## W7 — Web simulator, v2.1 on Normal / Hard / Very hard, 2026-11-23 (branch `sim-v1.2`, commit 721c57b)
 
