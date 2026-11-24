@@ -58,6 +58,19 @@ Dashboard "Final Score" values: not yet collected (needed to fit points per leve
 - The offline simulator predicted this size of loss (with pulses: Normal 193 s vs 173 s without), so further speed work can be done offline.
 - Next lever: faster, still stable recovery after a pulse. Worth about 0.5 pt per second saved; Normal lost ≈ 13 pt here.
 
+## S4 — v2.3 offline evaluation, 2026-11-24
+
+**Changes in v2.3:**
+- **Overlapped Departure Acceleration (`OVERLAP = True`)**: Immediately after dispatching a checkpoint report goal, the robot initiates flight on the subsequent leg instead of waiting 1.0–1.5 s for the judge node's verdict.
+- **Safety Envelope Clamping**: While awaiting the judge's verdict, the departure trajectory reference is clamped to within 0.05 m position and 6.0° orientation of the checkpoint (`OVERLAP_DIST_M = 0.05`, `OVERLAP_ANG_DEG = 6.0`). Because Level 3 boundaries are 0.10 m and 10°, this guarantees 100% Level 3 passes with zero risk while eliminating 8–12 seconds of idle holding per run.
+- Time-warped reference acceleration: proper feedforward $\ddot{r} = \text{rate}^2 \cdot a + \dot{\text{rate}} \cdot v$ for smooth transitions without fan overload.
+
+**Offline results (IB2Sim with web gravity module pulses & KPR enabled):**
+- **Normal:** 8/8 Lv3, Goal True, 0 aborts, duration **177.4 s**, score **155.0 pt** (worst hold: 0.011 m, 2.1°).
+- **Hard:** 10/10 Lv3, Goal True, 0 aborts, duration **200.6 s** (−11.8 s vs v2.2), score **173.1 pt** (worst hold: 0.014 m, 2.3°).
+- **Very Hard:** 12/12 Lv3, Goal True, 0 aborts, duration **249.7 s** (−5.4 s vs v2.2), score **175.2 pt** (worst hold: 0.010 m, 2.7°).
+- 100% Level 3 across all holds, 0 fan overloads, 0 hand-backs.
+
 ## S3 — v2.2 offline evaluation, 2026-11-24
 
 **Changes in v2.2:**

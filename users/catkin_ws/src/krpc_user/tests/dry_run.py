@@ -32,6 +32,10 @@ NO_FAN = "--no-fan" in sys.argv
 TRACE_ARGS = list(sys.argv)
 WEB_GRAVITY = "--gravity" in sys.argv
 GRAVITY_START = next((float(x.split("=")[1]) for x in sys.argv if x.startswith("--gstart=")), None)   # pulse phase override   # ("--nog" = explicit no-op)   # play the web gravity module's pulses (probe 2026-11-24)
+JUDGE_FAIL = set(int(x) for a in sys.argv if a.startswith("--judge-fail=") for x in a.split("=")[1].split(","))
+                               # --judge-fail=5,8: the judge rejects the first report of these checkpoints
+WEBLAG = "--weblag" in sys.argv   # web-like judge timing: hold starts 0.3 s after the report (first report
+                                   # +2.7 s, W2/L1), the answer comes 0.2 s after the hold ends
 KPR = "--kpr" in sys.argv      # copy the web's keep_pose_release: 8 ms after our first command
                                # after Mission Start, JAXA's controller is woken up (KEEP_POSE)
 DIST_F = 0.002                 # --push=0.01: constant disturbance force [N] in fan (physics) mode
@@ -103,6 +107,7 @@ class World(object):
         self.ignored_wrench = 0
         self.next_status = 0.0
         self.eval = None              # pending checkpoint hold: dict
+        self.hold_stats = []          # (max distance m, max angle deg) seen by the judge in each hold
         self.finish_eval = None       # pending goal hold at mission finish
         self.last_nav = ([0.2, 0.0, 0.0], list(g.IDENTITY))
 
@@ -229,10 +234,16 @@ class World(object):
                 continue
             if self.t >= ev["nxt"]:
                 ev["nxt"] = self.t + 1.0 / 30.0
-                ev["worst"] = min(ev["worst"], scorer.evaluate(self.last_nav[0], self.last_nav[1], ev["spec"])["level"])
+                _e = scorer.evaluate(self.last_nav[0], self.last_nav[1], ev["spec"])
+                ev["worst"] = min(ev["worst"], _e["level"])
+                ev["md"] = max(ev.get("md", 0.0), _e["distance"])            # closest approach to the Lv3 limits
+                ev["ma"] = max(ev.get("ma", 0.0), _e["centering_deg"] or 0.0, _e["roll_deg"] or 0.0)
             if self.t >= ev["end"]:
-                ev["done"] = True
-                ev["finish"](ev["worst"])
+                ev["nxt"] = 1e18                       # hold over: stop sampling
+                if self.t >= ev.get("fire", ev["end"]):
+                    ev["done"] = True
+                    self.hold_stats.append((ev.get("md", 0.0), ev.get("ma", 0.0)))
+                    ev["finish"](ev["worst"])
 
     def _kin_tick(self):
         old_p, old_q = list(self.pos), list(self.q)
@@ -309,12 +320,18 @@ class World(object):
 
     def start_eval(self, cp_id, spec, client):
         def finish(level):
+            if cp_id in JUDGE_FAIL:
+                JUDGE_FAIL.discard(cp_id)
+                level = 0
             if level <= 0:
                 client.done(False, "checkpoint left outermost margin")
             else:
                 self.reports[cp_id] = (self.t - self.mission_start, level)
                 client.done(True, "checkpoint accepted: band=%d" % level)
-        self.eval = dict(spec=spec, end=self.t + self.hold_s, nxt=self.t, worst=3, finish=finish)
+        lag0, lag1 = (0.3 + (2.7 if not self.reports and not getattr(self, "_lag_first_done", False) else 0.0), 0.2) if WEBLAG else (0.0, 0.0)
+        self._lag_first_done = True
+        self.eval = dict(spec=spec, end=self.t + lag0 + self.hold_s, nxt=self.t + lag0, worst=3, finish=finish,
+                         fire=self.t + lag0 + self.hold_s + lag1)
 
 
 def slerp(a, b, f):
@@ -620,3 +637,6 @@ if __name__ == "__main__":
     print("RESULT level=%s seed=%d duration=%s levels=%s goal=%s aborts=%d score=%s" % (
         level, seed, "%.1f" % dur if dur else None, levels, goal_ok, WORLD.aborts,
         "%.1f" % score if score is not None else None))
+    if WORLD.hold_stats:
+        print("HOLDS worst distance %.3f m, worst angle %.1f deg over %d holds" % (
+            max(x[0] for x in WORLD.hold_stats), max(x[1] for x in WORLD.hold_stats), len(WORLD.hold_stats)))

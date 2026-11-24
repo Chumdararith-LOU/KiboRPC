@@ -34,7 +34,7 @@ import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v2.2 2026-11-24"
+VERSION = "v2.3 2026-11-24"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -558,6 +558,8 @@ class UserTemplate:
             fan, levels[cp_id] = self.__visit_any(spec, fan, False)
         self.__hard_stop = GOAL_HARD_STOP_S     # v1.6: let a late goal leg finish
         fan, levels[goal.id] = self.__visit_any(goal, fan, True)
+        if FAN_MODE:                            # v2.3: verdicts judged in flight replace the provisional 3s
+            levels.update(dict((k, v[0]) for k, v in self.__fan.results.items()))
         rospy.loginfo('[%6.1f s] levels %s', self.__elapsed(), levels)
         if fan:
             # Report the finish while still holding: the judge checks the goal pose for 1 s after it.
@@ -584,6 +586,11 @@ class UserTemplate:
             self.__fan.brake_and_release()       # v2.1: hand JAXA's controller a robot at rest
             rospy.sleep(0.5)
             fan = False
+            failed = self.__fan.resolve_pending(self.__check_abort, self.__elapsed, hold=False)
+            if failed is not None:               # v2.3: a report judged in flight failed: fly it again
+                rospy.logwarn('[%6.1f s] cp %d failed while flying on; retrying with JAXA\'s controller',
+                              self.__elapsed(), failed['spec'].id)
+                self.__fan.results[failed['spec'].id] = (self.__visit(failed['spec'], is_goal=False), 'jaxa')
         return fan, self.__visit(spec, is_goal=is_goal)
 
     def __wait_for_nav(self):
