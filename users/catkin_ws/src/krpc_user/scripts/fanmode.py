@@ -51,6 +51,8 @@ REPORT_RETRIES = 1          # judge said "failed": the judge allows another repo
 OVERLAP = True              # v2.3: after a report, start the next leg at once; until the judge answers,
 OVERLAP_DIST_M = 0.05       # the reference pose (looked ahead) stays within these margins of the
 OVERLAP_ANG_DEG = 6.0       # reported checkpoint (Lv3 is 0.10 m, 10 deg), so the 1 s hold is never at risk
+OVERLAP_FIRST = False       # v2.4: not for the first report (the judge's first answer takes about 3 s; parked
+                            # at the margin that long, a pulse can push the robot out of Lv3)
 OVERLAP_LOOK_S = 0.8        # look this far ahead on the leg; the clock ramps between full speed and stop
 OVERLAP_RAMP = 0.7          # at this rate (per s), so it stops within 0.72 s of leg time: smooth, no fan overload
 
@@ -288,7 +290,7 @@ class FanPilot(object):
         """Fly to spec, settle and report. Goal (or OVERLAP off): keep holding until the judge answers.
         Otherwise return at once with level 3 'pending'; the verdict is checked during the next leg
         (a failed report is flown again there). Returns (level, judge message). Raises FanAbort."""
-        overlap = OVERLAP and tag != 'goal' and not wait
+        overlap = OVERLAP and tag != 'goal' and not wait and (OVERLAP_FIRST or self.results or self.pending)
         p, v, q, w = self._nav()
         self.leg = fanctl.Leg(p, q, spec.position, spec.target_q)
         self.leg_t0 = rospy.get_time()

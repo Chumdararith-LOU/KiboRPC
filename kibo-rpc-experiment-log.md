@@ -80,6 +80,30 @@ Dashboard "Final Score" values: not yet collected (needed to fit points per leve
 - The offline simulator predicted this size of loss (with pulses: Normal 193 s vs 173 s without), so further speed work can be done offline.
 - Next lever: faster, still stable recovery after a pulse. Worth about 0.5 pt per second saved; Normal lost ≈ 13 pt here.
 
+## S5 — v2.4 offline evaluation, 2026-11-24
+
+**Changes in v2.4:**
+- **Co-Balanced Push & Twist Sharing (`BALANCE = True`, `ETA_F_MAX = 0.8`, `ETA_T_MAX = 0.8`):**
+  - In `fanctl.py`, translation acceleration ($a$) and angular acceleration ($\alpha$) are dynamically solved via binary search over leg duration $T$ so that both linear and angular maneuvers finish simultaneously.
+  - Allows up to 80% fan allocation along individual axes when orthogonal demand is low, while strictly enforcing the joint combined limit $\le \text{PLAN\_LOAD}$ ($0.80$).
+  - Prevents under-utilization of fan capacity on legs dominated by either rotation or translation.
+- **Safe First Checkpoint Hold (`OVERLAP_FIRST = False`):**
+  - In `fanmode.py`, the very first checkpoint report waits for the judge action result at rest before initiating departure acceleration.
+  - Rationale: The judge node takes $\approx 2.7\text{–}3.0\text{ s}$ to return its verdict on the first call due to initial ROS service/action discovery (vs $0.7\text{–}1.0\text{ s}$ on subsequent calls). Staying parked at the exact checkpoint during this initial window eliminates any risk of a transient web gravity pulse drifting the robot outside Level 3 boundaries ($0.10\text{ m}, 10^\circ$).
+  - All subsequent checkpoints retain full overlapped departure acceleration (`OVERLAP = True`).
+
+**Offline results (IB2Sim with web gravity module pulses & KPR enabled, multi-seed batch):**
+- **Normal (4 runs: seeds 1, 101, 105, 109):** 100% Lv3 (32/32), 4/4 goals, 0 aborts.
+  - Seed 1: **160.6 s** (**161.1 pt**, −16.8 s vs v2.3), worst hold: $0.012\text{ m}, 1.9^\circ$.
+  - 4-run average: **172.4 s**, **156.8 pt**.
+- **Hard (4 runs: seeds 1, 102, 106, 110):** 100% Lv3 (40/40), 4/4 goals, 0 aborts.
+  - Seed 1: **192.5 s** (**176.6 pt**, −8.1 s vs v2.3), worst hold: $0.012\text{ m}, 1.8^\circ$.
+  - 4-run average: **191.6 s**, **177.0 pt**.
+- **Very Hard (4 runs: seeds 1, 103, 107, 111):** 100% Lv3 (48/48), 4/4 goals, 0 aborts.
+  - Seed 1: **219.3 s** (**190.4 pt**, −30.4 s vs v2.3, breaking 190 pt!), worst hold: $0.040\text{ m}, 2.4^\circ$.
+  - 4-run average: **221.8 s**, **189.1 pt**.
+- **Across all 12 evaluation runs:** 120/120 Level 3 checkpoints passed (100%), 0 fan overload violations, 0 hand-backs, 0 aborts.
+
 ## S4 — v2.3 offline evaluation, 2026-11-24
 
 **Changes in v2.3:**

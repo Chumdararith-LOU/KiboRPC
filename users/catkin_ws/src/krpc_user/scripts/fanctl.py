@@ -36,6 +36,9 @@ WC_MAX = 0.2          # the attitude correction for 0.2 rad/s (far off course, d
 KI = 0.4               # v2.1: slow correction for a steady outside push (web baseline about 7 mN)
 I_ZONE_M = 0.05        # ... and only learned within 5 cm of the reference
 I_MAX = 0.02           # m/s2 cap on that correction (about 64 mN)
+BALANCE = True          # v2.4: share the fans between push and twist so both finish together
+ETA_F_MAX = 0.8         # ... with these caps per part (the joint PLAN_LOAD limit still applies)
+ETA_T_MAX = 0.8
 RET_ETA = 0.4          # v2.2: far off the reference, return as fast as a braking curve allows:
 RET_VMAX = 0.20        # speed <= sqrt(2 * a * (distance - RET_MARGIN_M)), a = RET_ETA x the fans' push
 RET_MARGIN_M = 0.03    # in that direction (VC_MAX stays the floor, so near the target nothing changes)
@@ -95,7 +98,11 @@ def rotvec(q):
 class Leg(object):
     """Reference trajectory for one leg."""
 
-    def __init__(self, p0, q0, p1, q1, eta_f=ETA_F, eta_t=ETA_T, v_max=V_MAX, w_max=W_MAX):
+    def __init__(self, p0, q0, p1, q1, eta_f=None, eta_t=None, v_max=None, w_max=None):
+        eta_f = ETA_F if eta_f is None else eta_f
+        eta_t = ETA_T if eta_t is None else eta_t
+        v_max = V_MAX if v_max is None else v_max
+        w_max = W_MAX if w_max is None else w_max
         self.p0, self.q0, self.p1, self.q1 = list(p0), g.q_normalize(q0), list(p1), g.q_normalize(q1)
         self.d = g.distance(p0, p1)
         self.u = g.v_scale(g.v_sub(p1, p0), 1.0 / self.d) if self.d > 1e-6 else [1.0, 0.0, 0.0]
@@ -118,6 +125,57 @@ class Leg(object):
         self.prof_p = _profile(self.d, v_max, self.acc)
         self.prof_r = _profile(self.ang, w_max, self.alpha)
         self.duration = max(self.prof_p[3], self.prof_r[3])
+        if BALANCE:
+            self._balance(cap, inertia, v_max, w_max)
+
+    @staticmethod
+    def _need(dist, vmax, T):
+        """Smallest rest-to-rest acceleration covering dist in time T with speed limit vmax."""
+        if dist <= 1e-9:
+            return 0.0
+        if 2.0 * dist / T <= vmax:
+            return 4.0 * dist / (T * T)
+        if T <= dist / vmax + 1e-9:
+            return float('inf')
+        return vmax / (T - dist / vmax)
+
+    def _balance(self, cap, inertia, v_max, w_max):
+        """v2.4 candidate: the shortest common duration whose push and twist fit the fans together."""
+        a_cap = ETA_F_MAX * cap / MASS
+        al_cap = ETA_T_MAX * torque_cap(self.axis) / inertia
+        def fits(T):
+            a, al = self._need(self.d, v_max, T), self._need(self.ang, w_max, T)
+            if a > a_cap or al > al_cap:
+                return None
+            if self._load_of(a, al) > PLAN_LOAD:
+                return None
+            return a, al
+        lo, hi = 0.0, self.duration
+        if fits(hi) is None:
+            return                                  # keep the v2.1 plan
+        for _ in range(24):
+            mid = 0.5 * (lo + hi)
+            if mid > 0.0 and fits(mid) is not None:
+                hi = mid
+            else:
+                lo = mid
+        a, al = fits(hi)
+        self.acc = max(a, 1e-6)
+        self.alpha = max(al, 1e-6)
+        self.prof_p = _profile(self.d, v_max, self.acc)
+        self.prof_r = _profile(self.ang, w_max, self.alpha)
+        self.duration = max(self.prof_p[3], self.prof_r[3])
+
+    def _load_of(self, acc, alpha):
+        worst = 0.0
+        T = [INERTIA[i] * self.axis[i] * alpha for i in range(3)]
+        for j in range(SAMPLES):
+            q = g.q_slerp(self.q0, self.q1, j / float(SAMPLES - 1))
+            F = g.q_rotate(g.q_conj(q), g.v_scale(self.u, MASS * acc))
+            for sf in (1.0, -1.0):
+                for st in (1.0, -1.0):
+                    worst = max(worst, fans.load([x * sf for x in F], [x * st for x in T]))
+        return worst
 
     def _peak_load(self, k):
         worst = 0.0
