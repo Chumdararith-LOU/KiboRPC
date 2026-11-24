@@ -24,8 +24,30 @@ Measured results from Gazebo and Web simulator runs. These numbers replace the e
 | W8-N | v2.2 | Normal | **8 / 8** | **yes** | 189.1 s (150.7 pt) |
 | W8-H | v2.2 | Hard | **10 / 10** | **yes** | 235.3 s (158.0 pt) |
 | W8-V | v2.2 | Very hard | **12 / 12** | **yes** | 233.0 s (**183.5 pt**) |
+| W9-N | v2.3 | Normal | **8 / 8** | **yes** | 177.4 s (**155.0 pt**) |
+| W9-H | v2.3 | Hard | **10 / 10** | **yes** | 187.1 s (**178.9 pt**) |
+| W9-V | v2.3 | Very hard | **12 / 12** | **yes** | 228.9 s (**185.6 pt**) |
 
 Dashboard "Final Score" values: not yet collected (needed to fit points per level, Pt_goal and the time multiplier).
+
+## W9 — Web simulator, v2.3 on Normal / Hard / Very hard, 2026-11-24 (branch `sim-v1.2`)
+
+**Third consecutive perfect web sweep (30/30 Lv3, 3/3 goals) with all-time record scores across EVERY difficulty tier (Normal: 155.0 pt, Hard: 178.9 pt, Very Hard: 185.6 pt, 3-course average: 173.15 pt).**
+
+| Level | Plan (expected finish / score) | Actual (judge) | Score | Key Observation |
+|---|---|---|---|---|
+| Normal | 178 s / 154.6 | **177.42 s** | **154.95 pt** | **New all-time Normal record!** −11.65 s vs v2.2 (189.1 s); overlapped departure acceleration saved flight time cleanly |
+| Hard | 200 s / 173.3 | **187.06 s** | **178.94 pt** | **New all-time Hard record!** −48.22 s vs v2.2 (235.3 s); 10/10 Lv3, 0 fan saturations, zero hold boundary violations |
+| Very hard | 233 s / 183.6 | **228.91 s** | **185.55 pt** | **New all-time highest score across all web runs!** −4.07 s vs v2.2 record; all 12 CPs Lv3 under 229 s |
+
+- **Overlapped Departure Acceleration (`OVERLAP = True`):**
+  - Fully validated under live web simulator physics and disturbances.
+  - In-flight checkpoint validation: all 30 checkpoints across the 3 runs reported `checkpoint accepted: band=3` while already accelerating toward the next target (judged in flight times: 0.7–2.9 s).
+  - Clamping departure trajectory references to $\le 0.05\text{ m}$ position error and $\le 6.0^\circ$ attitude deviation successfully prevented any Level 3 boundary excursions ($0.10\text{ m}, 10.0^\circ$).
+- **Rosbag Probe Telemetry (`web_results/...__probe/`):**
+  - **Fan Overload Rule:** **0 occurrences** across all three runs. Peak duty cycle was strictly capped at `0.9750`, with zero instances of $\ge 4$ fans at 1.0.
+  - **Wrench Publishing Integrity:** `/ctl_only` remained in standby during all flight legs; user controller (`/krpc_user`) commanded cleanly at 50 Hz.
+  - **Transient Recovery:** Smooth trajectory tracking was maintained even through web gravity pulses, with zero pause timeouts or bailouts.
 
 ## W8 — Web simulator, v2.2 on Normal / Hard / Very hard, 2026-11-24 (branch `sim-v1.2`)
 
