@@ -27,7 +27,7 @@ STANDBY_STABLE_S = 0.5      # standby must hold this long before we start pushin
 ENGAGE_TRIES = 4
 MAX_REENGAGE = 8            # standby re-sent during flight more often than this -> give up
 REENGAGE_GAP_S = 0.5
-TRACK_POS_FAIL_M = 1.0      # v2.1 (was 0.6): with the pause below this should never be reached
+TRACK_POS_FAIL_M = 2.0     # v2.2 (was 1.0): a web gravity pulse can push the robot about 1 m before it comes back
 TRACK_ATT_FAIL_DEG = 60.0
 LEG_EXTRA_S = 60.0          # v2.1 (was 15): a leg not settled this long after its plan (+ waits) -> hand back
                             # (a 5 s web gravity pulse can push the robot 0.75 m; the calm return takes ~15 s)

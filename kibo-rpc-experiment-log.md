@@ -16,13 +16,41 @@ Measured results from Gazebo and Web simulator runs. These numbers replace the e
 | W2-H | v1.5 | Hard | 9 / 10 | no (CP 9 planned skip) | 283.5 s |
 | W2-V | v1.5 | Very hard | 8 / 12 | no (CPs 5, 8, 10, 11 planned skips) | 250.3 s |
 | W6-N | v2.0 | Normal | **8 / 8** | **yes** | 279.1 s |
-| W6-H | v2.0 | Hard | 8 / 10 | no (CPs 4, 12 missing) | 278.6 s |
+| W6-H | v2.0 | Hard | 8 / 10 | no | 278.6 s |
 | W6-V | v2.0 | Very hard | **12 / 12** | **yes** | 281.2 s |
-| W7-N | v2.1 | Normal | **8 / 8** | **yes** | 201.4 s |
-| W7-H | v2.1 | Hard | **10 / 10** | **yes** | 198.7 s |
-| W7-V | v2.1 | Very hard | **12 / 12** | **yes** | 241.2 s |
+| W7-N | v2.1 | Normal | **8 / 8** | **yes** | 201.4 s (146.2 pt) |
+| W7-H | v2.1 | Hard | **10 / 10** | **yes** | 198.7 s (173.9 pt) |
+| W7-V | v2.1 | Very hard | **12 / 12** | **yes** | 241.2 s (179.4 pt) |
 
 Dashboard "Final Score" values: not yet collected (needed to fit points per level, Pt_goal and the time multiplier).
+
+## W7 — Web simulator, v2.1 on Normal / Hard / Very hard, 2026-11-23 (branch `sim-v1.2`, commit 721c57b)
+
+**First perfect web sweep: 30/30 checkpoints at Lv3, 3/3 goals, average ≈ 166.5 pt** (v2.0 ≈ 121, v1.8 ≈ 90).
+
+| Level | Plan (expected finish / score) | Actual (judge) | Score | Seconds lost to pulses (legs > 2 s over plan) |
+|---|---|---|---|---|
+| Normal | 178 s / 154.6 | 201.4 s | 146.2 | ≈ 28 s: CP6 +8.8 (max error 0.15 m), CP8 +10.3 (0.42 m), CP5 +8.8 (0.56 m) |
+| Hard | 200 s / 173.3 | 198.7 s | 173.9 | ≈ 2 s: CP9 +2.7, CP1 +2.4 |
+| Very hard | 233 s / 183.6 | 241.2 s | 179.4 | ≈ 20 s: CP11 +4.7, CP8 +3.6, CP4 +12.5 (0.24 m) |
+
+- Standby confirmed at the first attempt in all runs; no hand-backs; `/ctl_only` silent during flight; peak duty 0.975; JAXA's saturation rule never triggered (team probe).
+- Undisturbed legs ran about 0.7 s over plan (the 1 s judge hold is inside that).
+- Disturbed legs show large max errors (0.15–0.56 m) with almost no "paused" time, so the loss is the slow return after a pulse (correction capped at 6 cm/s) rather than waiting on the path.
+- The offline simulator predicted this size of loss (with pulses: Normal 193 s vs 173 s without), so further speed work can be done offline.
+- Next lever: faster, still stable recovery after a pulse. Worth about 0.5 pt per second saved; Normal lost ≈ 13 pt here.
+
+## S3 — v2.2 offline evaluation, 2026-11-24
+
+**Changes in v2.2:**
+- Dynamic braking return speed (`RET_ETA = 0.4`, `RET_VMAX = 0.20 m/s`, `RET_MARGIN_M = 0.03 m`). When pushed off course by web gravity pulses (up to 0.14 N), the robot returns toward the reference line at up to 20 cm/s (governed by a parabolic physical braking curve) rather than crawling at a fixed 6 cm/s cap. Near the target, `VC_MAX` remains the floor.
+- `TRACK_POS_FAIL_M = 2.0 m` (was 1.0 m): provides ample buffer during severe transient displacements from web gravity pulses.
+
+**Offline results (IB2Sim with web gravity module pulses & KPR enabled):**
+- **Normal:** 8/8 Lv3, Goal True, 0 aborts, duration **178.8 s**, score **154.5 pt**.
+- **Hard:** 10/10 Lv3, Goal True, 0 aborts, duration **212.4 s**, score **167.9 pt**.
+- **Very Hard:** 12/12 Lv3, Goal True, 0 aborts, duration **255.1 s**, score **172.5 pt**.
+- 100% Lv3 pass rate across all tiers, 0 hand-backs, 0 fan saturations. Faster recovery reclaims seconds lost to web pulses.
 
 ## P1 + S2 — Probe of the W6 bags, and v2.1 offline, 2026-11-24
 
@@ -51,29 +79,6 @@ Dashboard "Final Score" values: not yet collected (needed to fit points per leve
 
 - The cost of the headroom with no pulses is under 1 pt per run.
 - Non-fan fallback, aborted-first-move and slow-web cases still pass. Offline tests and the Python 3.6 parse check pass.
-
-## W7 — Web simulator, v2.1 on Normal / Hard / Very hard, 2026-11-24 (branch `sim-v1.2`)
-
-| Level | Passed (all Lv3) | Goal | Mission time | Score (formula) | Fan mode |
-|---|---|---|---|---|---|
-| Normal | **8/8** | **yes** | 201.41 s | **146.15** | 100% full run (0 hand-backs, 0 overloads) |
-| Hard | **10/10** | **yes** | 198.71 s | **173.89** | 100% full run (0 hand-backs, 0 overloads) |
-| Very hard | **12/12** | **yes** | 241.16 s | **179.42** | 100% full run (0 hand-backs, 0 overloads) |
-
-- **Flawless 100% Lv3 Sweep:** All 30 checkpoints across the three courses validated at Level 3, all goals reached in time. Average score across all three difficulty levels: **166.49 pt** (vs v2.0: ~121 pt, v1.8: ~90 pt).
-- **Probe Telemetry (`web_results/...__probe/`):**
-  - **Overload Rule Tripping:** **0 occurrences** across all three runs (vs 2,488 cycles in v2.0 Very Hard).
-  - **Peak Fan Duty:** Strictly capped at `0.975`, with the 20% plan headroom (`PLAN_LOAD = 0.80`) successfully buffering web gravity pulses.
-  - **Zero Mid-Flight Hand-Backs:** `/ctl_only` published exactly 0 wrenches between 15 s and 200 s across all three runs.
-  - **Very Hard CP2 -> CP9 Transit:** Max tracking error was just `0.017 m` (fan duty limit 5%), holding CP9 Lv3 cleanly at 183.4 s.
-| Very hard | **12/12** | **yes** | 241.16 s | **179.42** | 100% full run (0 hand-backs, 0 overloads) |
-
-- **Flawless 100% Lv3 Sweep:** All 30 checkpoints across the three courses validated at Level 3, all goals reached in time. Average score across all three difficulty levels: **166.49 pt** (vs v2.0: ~121 pt, v1.8: ~90 pt).
-- **Probe Telemetry ():**
-  - **Overload Rule Tripping:** **0 occurrences** across all three runs (vs 2,488 cycles in v2.0 Very Hard).
-  - **Peak Fan Duty:** Strictly capped at **0.975**, with the 20% plan headroom () successfully buffering web gravity pulses.
-  - **Zero Mid-Flight Hand-Backs:**  published exactly 0 wrenches between 15 s and 200 s across all three runs.
-  - **Very Hard CP2 -> CP9 Transit:** Max tracking error was just **0.017 m** (fan duty limit 5%), holding CP9 Lv3 cleanly at 183.4 s.
 
 ## W6 — Web simulator, v2.0 on Normal / Hard / Very hard, 2026-11-23 (branch `sim-v1.2`, commit 3bb00a7)
 

@@ -36,6 +36,9 @@ WC_MAX = 0.2          # the attitude correction for 0.2 rad/s (far off course, d
 KI = 0.4               # v2.1: slow correction for a steady outside push (web baseline about 7 mN)
 I_ZONE_M = 0.05        # ... and only learned within 5 cm of the reference
 I_MAX = 0.02           # m/s2 cap on that correction (about 64 mN)
+RET_ETA = 0.4          # v2.2: far off the reference, return as fast as a braking curve allows:
+RET_VMAX = 0.20        # speed <= sqrt(2 * a * (distance - RET_MARGIN_M)), a = RET_ETA x the fans' push
+RET_MARGIN_M = 0.03    # in that direction (VC_MAX stays the floor, so near the target nothing changes)
 
 
 def _profile(d, vmax, a):
@@ -218,8 +221,9 @@ class FanController(object):
             corr = [x * I_MAX / n for x in corr]
         vc = [self.kp / self.kd * (pr[k] - p[k]) for k in range(3)]
         n = math.sqrt(sum(x * x for x in vc))
-        if n > VC_MAX:
-            vc = [x * VC_MAX / n for x in vc]
+        cap = self.return_speed(pr, p, q)
+        if n > cap:
+            vc = [x * cap / n for x in vc]
         a_cmd = [ar[k] + self.kd * (vr[k] + vc[k] - v[k]) + corr[k] for k in range(3)]
         e = rotvec(g.q_mul(g.q_conj(q), qr))          # attitude error, body frame
         wr_b = g.q_rotate(g.q_conj(q), g.q_rotate(qr, wr))   # reference rate in the current body frame
@@ -239,6 +243,17 @@ class FanController(object):
         al_real = [(T[k] - gyro[k]) / INERTIA[k] for k in range(3)]
         self.cmd_hist.append((now, a_real, al_real))
         return F, T
+
+    @staticmethod
+    def return_speed(pr, p, q):
+        """v2.2: the correction speed limit for the robot at p (attitude q) toward pr."""
+        e = g.v_sub(pr, p)
+        d = g.v_norm(e)
+        if RET_ETA <= 0.0 or d <= RET_MARGIN_M + 1e-6:
+            return VC_MAX
+        u_b = g.q_rotate(g.q_conj(q), g.v_scale(e, 1.0 / d))
+        a = RET_ETA * force_cap(u_b) / MASS
+        return max(VC_MAX, min(RET_VMAX, math.sqrt(2.0 * a * (d - RET_MARGIN_M))))
 
     def _limit(self, F, T):
         load = fans.load(F, T)

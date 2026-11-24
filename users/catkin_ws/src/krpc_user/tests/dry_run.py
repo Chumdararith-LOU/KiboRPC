@@ -29,6 +29,9 @@ QUIET = "--quiet" in sys.argv
 ARRIVAL_ERR = "--err" in sys.argv
 GOAL_SLOW = 1.0                # --goal-slow=1.15: every leg to the goal takes longer (web W2/W3)
 NO_FAN = "--no-fan" in sys.argv
+TRACE_ARGS = list(sys.argv)
+WEB_GRAVITY = "--gravity" in sys.argv
+GRAVITY_START = next((float(x.split("=")[1]) for x in sys.argv if x.startswith("--gstart=")), None)   # pulse phase override   # ("--nog" = explicit no-op)   # play the web gravity module's pulses (probe 2026-11-24)
 KPR = "--kpr" in sys.argv      # copy the web's keep_pose_release: 8 ms after our first command
                                # after Mission Start, JAXA's controller is woken up (KEEP_POSE)
 DIST_F = 0.002                 # --push=0.01: constant disturbance force [N] in fan (physics) mode
@@ -92,7 +95,7 @@ class World(object):
         self.goal_result = None       # (success, reason) from the v1.2 goal rule
         self.aborts = 0
         # v2.0: physics for /ctl/wrench flight, JAXA controller state, async judge
-        self.phys = IB2Sim(seed=seed, dist_force=DIST_F)
+        self.phys = IB2Sim(seed=seed, dist_force=DIST_F, web_gravity=WEB_GRAVITY, gravity_start=GRAVITY_START)
         self.mode = "kin"             # "kin": JAXA controller moves/holds the robot; "wrench": our pushes
         self.ctl_type = 10            # KEEP_POSE until told otherwise
         self.kpr_at = None
@@ -579,6 +582,9 @@ def run(repo, level, seed, judge_delay=0.0, abort_plan=None, slow_plan=None):
     import user_template
     if NO_FAN:
         user_template.FAN_MODE = False
+    if "--trace" in TRACE_ARGS:
+        import fanmode
+        fanmode.TRACE = True
     node = user_template.UserTemplate()
     node.run()
     t_end = WORLD.t + 2.0

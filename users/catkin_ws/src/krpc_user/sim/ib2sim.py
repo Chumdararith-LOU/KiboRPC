@@ -24,7 +24,13 @@ INERTIA = [0.0136245, 0.0139967, 0.0130568]
 class IB2Sim(object):
     DT = 0.002
 
-    def __init__(self, seed=0, nav_delay=0.1, dist_force=0.002, dist_torque=0.0002, fan_noise=True):
+    # Web gravity module (probe of 3 web bags, 2026-11-24): Gazebo gravity x re-set every second,
+    # baseline about +0.0022 m/s2 with pulses; in ISS coordinates it pushes along -y (Gazebo x = ISS -y).
+    WEB_PULSES = [(5.0, -0.0395), (3.0, 0.0054), (5.0, 0.0441), (1.0, -0.0069), (2.0, -0.0335)]
+    WEB_GAPS = [9.0, 19.0, 23.0, 0.0]          # seconds between the pulses above, as seen in the logs
+
+    def __init__(self, seed=0, nav_delay=0.1, dist_force=0.002, dist_torque=0.0002, fan_noise=True,
+                 web_gravity=False, gravity_start=None):
         self.rng = random.Random(seed)
         self.t = 0.0
         self.p = [0.2, 0.0, 0.0]
@@ -45,6 +51,23 @@ class IB2Sim(object):
         self.pos_bias = [-0.0021, -0.0018, -0.00007]
         self.vel_bias = [-0.0056, -0.0043, 0.00024]
         self.saturations = 0
+        self.gravity = []                        # (t_from, t_to, g_x) in Gazebo x
+        if web_gravity:
+            t = gravity_start if gravity_start is not None else self.rng.uniform(20.0, 120.0)
+            for k, (dur, gx) in enumerate(self.WEB_PULSES):
+                self.gravity.append((t, t + dur, gx))
+                t += dur + (self.WEB_GAPS[k] if k < len(self.WEB_GAPS) else 0.0)
+        self.web_gravity = web_gravity
+
+    def gravity_push(self, t):
+        """World (ISS) force from the web gravity module at time t."""
+        if not self.web_gravity:
+            return [0.0, 0.0, 0.0]
+        gx = 0.0022
+        for a, b, v in self.gravity:
+            if a <= t < b:
+                gx = v
+        return [0.0, -gx * MASS, 0.0]
 
     def command(self, F_body, T_body):
         f = fans.allocate(F_body, T_body)
@@ -61,7 +84,8 @@ class IB2Sim(object):
             ff = [max(0.0, f + (self.rng.gauss(0, 0.2 * f) if self.fan_noise and f > 0 else 0.0)) for f in self.fan]
             Fb, Tb = fans.wrench_of(ff)
             Fw = g.q_rotate(self.q, Fb)
-            a = [(Fw[i] + self.dist_f[i]) / MASS for i in range(3)]
+            gp = self.gravity_push(self.t)
+            a = [(Fw[i] + self.dist_f[i] + gp[i]) / MASS for i in range(3)]
             Iw = [INERTIA[i] * self.w[i] for i in range(3)]
             gyro = g.v_cross(self.w, Iw)
             wd = [(Tb[i] + self.dist_t[i] - gyro[i]) / INERTIA[i] for i in range(3)]

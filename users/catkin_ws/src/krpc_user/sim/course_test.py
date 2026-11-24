@@ -18,8 +18,8 @@ def safe_lv3(ev, spec):
     return ev["level"] == 3 and ev["distance"] <= 0.05 and (ev["centering_deg"] or 0) <= 6 and (ev["roll_deg"] or 0) <= 6
 
 
-def run(payload, seed, dist_force=0.002, nav_delay=0.1, log=False):
-    sim = IB2Sim(seed=seed, dist_force=dist_force, nav_delay=nav_delay)
+def run(payload, seed, dist_force=0.002, nav_delay=0.1, log=False, web_gravity=False, gravity_start=None):
+    sim = IB2Sim(seed=seed, dist_force=dist_force, nav_delay=nav_delay, web_gravity=web_gravity, gravity_start=gravity_start)
     ctl = fanctl.FanController()
     for _ in range(50):
         sim.step(0.02); ctl.learn_bias(sim.nav()[1])
