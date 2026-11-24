@@ -27,8 +27,31 @@ Measured results from Gazebo and Web simulator runs. These numbers replace the e
 | W9-N | v2.3 | Normal | **8 / 8** | **yes** | 177.4 s (**155.0 pt**) |
 | W9-H | v2.3 | Hard | **10 / 10** | **yes** | 187.1 s (**178.9 pt**) |
 | W9-V | v2.3 | Very hard | **12 / 12** | **yes** | 228.9 s (**185.6 pt**) |
+| W10-N | v2.4 | Normal | **8 / 8** | **yes** | 170.8 s (**157.4 pt**) |
+| W10-H | v2.4 | Hard | **10 / 10** | **yes** | 191.8 s (176.9 pt) |
+| W10-V | v2.4 | Very hard | **12 / 12** | **yes** | 204.5 s (**197.7 pt**) |
 
 Dashboard "Final Score" values: not yet collected (needed to fit points per level, Pt_goal and the time multiplier).
+
+## W10 — Web simulator, v2.4 on Normal / Hard / Very hard, 2026-11-24 (branch `sim-v1.2`)
+
+**Fourth consecutive perfect web sweep (30/30 Lv3, 3/3 goals) with an astonishing 197.7 pt on Very Hard and a new Normal record (157.4 pt). 3-course average reaches an all-time high of 177.33 pt.**
+
+| Level | Plan (expected finish / score) | Actual (judge) | Score | Key Observation |
+|---|---|---|---|---|
+| Normal | 178 s / 154.6 | **170.82 s** | **157.37 pt** | **New all-time Normal record!** −6.60 s vs v2.3; absorbed pulse, graceful brake and JAXA hand-back completed CP12 goal cleanly at Lv3 |
+| Hard | 200 s / 173.3 | **191.80 s** | **176.89 pt** | 10/10 Lv3, 0 fan overloads (peak 0.975); dynamic braking recovered from two massive pulses (0.40 m & 0.51 m) without bailout |
+| Very hard | 233 s / 183.6 | **204.54 s** | **197.73 pt** | **Historic all-time record score across all web runs!** −24.37 s vs v2.3 (228.9 s); co-balanced push/twist shaved over 24 s with 12/12 Lv3 |
+
+- **Co-Balanced Push & Twist Sharing (`BALANCE = True`):**
+  - Massive speedup demonstrated live on the web: Very Hard finished in just **204.54 s** (shaving 24.37 s off v2.3's 228.9 s), achieving **197.73 pt**!
+  - By dynamically solving linear and angular acceleration profiles to complete together, fan duty headroom is continuously maximized without exceeding the 80% combined load limit.
+- **Safe First Checkpoint Hold (`OVERLAP_FIRST = False`):**
+  - Successfully parked at rest on the first checkpoint across all runs while waiting for the judge's ~2.5 s connection handshake.
+  - Zero initial hold drift; subsequent checkpoints accelerated immediately upon report dispatch (`judged in flight` times: 0.7–1.0 s) with 100% acceptance at band 3.
+- **Rosbag Probe Telemetry (`web_results/...__probe/`):**
+  - **Hard & Very Hard:** **0 fan overloads** (peak duty strictly capped at 0.9750, 0 instances of $\ge 4$ fans at 1.0).
+  - **Normal:** 0 overloads during user flight; after handing back on goal approach, JAXA's controller braked the final meters at $t=168.3\text{ s}$ creating a brief 0.56 s saturation before locking in Level 3 validation.
 
 ## W9 — Web simulator, v2.3 on Normal / Hard / Very hard, 2026-11-24 (branch `sim-v1.2`)
 
