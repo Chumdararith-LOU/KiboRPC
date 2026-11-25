@@ -98,14 +98,16 @@ class IB2Sim(object):
         while self.t < end - 1e-12:
             for i in range(8):
                 self.fan[i] += k * (self.cmd_f[i] - self.fan[i])
-            ff = [max(0.0, f + (self.rng.gauss(0, 0.2 * f) if self.fan_noise and f > 0 else 0.0)) for f in self.fan]
+            ff = [getattr(self, 'fan_k', 1.0) * max(0.0, f + (self.rng.gauss(0, 0.2 * f) if self.fan_noise and f > 0 else 0.0))
+                  for f in self.fan]
             Fb, Tb = fans.wrench_of(ff)
             Fw = g.q_rotate(self.q, Fb)
             gp = self.gravity_push(self.t)
-            a = [(Fw[i] + self.dist_f[i] + gp[i]) / MASS for i in range(3)]
+            mk = getattr(self, 'mass_k', 1.0)
+            a = [(Fw[i] + self.dist_f[i]) / (MASS * mk) + gp[i] / MASS for i in range(3)]
             Iw = [INERTIA[i] * self.w[i] for i in range(3)]
             gyro = g.v_cross(self.w, Iw)
-            wd = [(Tb[i] + self.dist_t[i] - gyro[i]) / INERTIA[i] for i in range(3)]
+            wd = [(Tb[i] + self.dist_t[i] - mk * gyro[i]) / (INERTIA[i] * mk) for i in range(3)]
             self.v = [self.v[i] + a[i] * self.DT for i in range(3)]
             self.p = [self.p[i] + self.v[i] * self.DT for i in range(3)]
             self.w = [self.w[i] + wd[i] * self.DT for i in range(3)]

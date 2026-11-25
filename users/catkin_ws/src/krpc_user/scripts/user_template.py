@@ -34,7 +34,7 @@ import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v2.5 2026-11-25"
+VERSION = "v2.6 2026-11-25"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -580,6 +580,12 @@ class UserTemplate:
                                                'goal' if is_goal else 'checkpoint')
                 if level > 0:
                     return True, level
+                if self.__recoveries < MAX_RECOVERIES:
+                    # v2.6: a rejected or unanswered report: fly to it again ourselves (no hand-back)
+                    self.__recoveries += 1
+                    rospy.logwarn('[%6.1f s] cp %d not accepted in fan mode; flying it again (recovery %d of %d)',
+                                  self.__elapsed(), spec.id, self.__recoveries, MAX_RECOVERIES)
+                    continue
                 rospy.logwarn('[%6.1f s] cp %d not accepted in fan mode; retrying with JAXA\'s controller',
                               self.__elapsed(), spec.id)
             except fanmode.FanAbort as exc:

@@ -40,6 +40,13 @@ JUDGE_FAIL = set(int(x) for a in sys.argv if a.startswith("--judge-fail=") for x
 CHEAT = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--cheat=")), None)
                                # --cheat=<cheat_sheet.json>: replay a real (e.g. web) course instead of a generated one
 GRAVITY_SCALE = next((float(x.split("=")[1]) for x in sys.argv if x.startswith("--gscale=")), 1.0)   # stress: pulses x N
+def _opt(name, default):
+    return next((x.split("=", 1)[1] for x in sys.argv if x.startswith("--%s=" % name)), default)
+NAV_DELAY = float(_opt("navdelay", 0.1))       # stress (audit): navigation delay [s]
+MASS_K = float(_opt("mass", 1.0))              # stress: robot mass and inertia x K (the program still assumes 3.216 kg)
+FAN_K = float(_opt("fanscale", 1.0))           # stress: every fan pushes K x what the program assumes
+HOLD_S = float(_opt("hold", 1.0))              # stress: the judge's hold time [s]
+JLAG = [float(x) for x in _opt("jlag", "0.3,2.7,0.2").split(",")]   # weblag: hold start lag, first-report extra, answer lag
 WEBLAG = "--weblag" in sys.argv   # web-like judge timing: hold starts 0.3 s after the report (first report
                                    # +2.7 s, W2/L1), the answer comes 0.2 s after the hold ends
 KPR = "--kpr" in sys.argv      # copy the web's keep_pose_release: 8 ms after our first command
@@ -101,13 +108,15 @@ class World(object):
         self.abort_plan = {}          # move number (1-based) -> abort after this many s (web W1)
         self.slow_plan = {}           # move number -> time factor (web W2: goal legs 1.10-1.20x)
         self.arrival_err = False      # --err: the controller misses like on the web (~1 cm, <= 3.5 deg)
-        self.hold_s = 1.0             # sim v1.2: the judge holds every report for 1 s
+        self.hold_s = HOLD_S          # sim v1.2: the judge holds every report for 1 s
         self.goal_result = None       # (success, reason) from the v1.2 goal rule
         self.aborts = 0
         # v2.0: physics for /ctl/wrench flight, JAXA controller state, async judge
-        self.phys = IB2Sim(seed=seed, dist_force=DIST_F, web_gravity=WEB_GRAVITY, gravity_start=GRAVITY_START,
+        self.phys = IB2Sim(seed=seed, dist_force=DIST_F, web_gravity=WEB_GRAVITY, gravity_start=GRAVITY_START, nav_delay=NAV_DELAY,
                            station=_station() if CONTACT else None)
         self.phys.gravity_scale = GRAVITY_SCALE
+        self.phys.mass_k = MASS_K
+        self.phys.fan_k = FAN_K
         self.mode = "kin"             # "kin": JAXA controller moves/holds the robot; "wrench": our pushes
         self.ctl_type = 10            # KEEP_POSE until told otherwise
         self.kpr_at = None
@@ -336,7 +345,7 @@ class World(object):
             else:
                 self.reports[cp_id] = (self.t - self.mission_start, level)
                 client.done(True, "checkpoint accepted: band=%d" % level)
-        lag0, lag1 = (0.3 + (2.7 if not self.reports and not getattr(self, "_lag_first_done", False) else 0.0), 0.2) if WEBLAG else (0.0, 0.0)
+        lag0, lag1 = (JLAG[0] + (JLAG[1] if not self.reports and not getattr(self, "_lag_first_done", False) else 0.0), JLAG[2]) if WEBLAG else (0.0, 0.0)
         self._lag_first_done = True
         self.eval = dict(spec=spec, end=self.t + lag0 + self.hold_s, nxt=self.t + lag0, worst=3, finish=finish,
                          fire=self.t + lag0 + self.hold_s + lag1)

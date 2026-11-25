@@ -122,6 +122,26 @@ Dashboard "Final Score" values: not yet collected (needed to fit points per leve
 - The offline simulator predicted this size of loss (with pulses: Normal 193 s vs 173 s without), so further speed work can be done offline.
 - Next lever: faster, still stable recovery after a pulse. Worth about 0.5 pt per second saved; Normal lost ≈ 13 pt here.
 
+## S7 — v2.6 offline evaluation, 2026-11-25
+
+**Changes in v2.6:**
+- **Busy-Server Judge Margin (`REPORT_WAIT_S = 15.0`, was `6.0` in `fanmode.py`):**
+  - First report judge responses routinely took 2.7–3.7 s; raising `REPORT_WAIT_S` to `15.0` ensures a temporarily loaded web judge node does not cause premature timeouts.
+- **Fan-Mode Retry on Rejected/Unanswered Reports (`user_template.py`):**
+  - In `__visit_any()`, when `self.__fan.visit()` returns `level == 0` (checkpoint rejected or unanswered), instead of immediately falling back to JAXA's controller, v2.6 increments `self.__recoveries` (up to `MAX_RECOVERIES = 3`) and re-flies the checkpoint directly in fan mode.
+- **Test & Audit Upgrades (`tests_v2.6.zip`):**
+  - Added `--navdelay`, `--mass`, `--fanscale`, `--hold`, and `--jlag` stress parameters to `dry_run.py` and `ib2sim.py`, plus `analysis/nose_first.py`.
+
+**Offline results (IB2Sim with recorded 3-axis web gravity `--gravity`, `--kpr`, `--nocontact`):**
+- **Standard baselines (seed 1):**
+  - **Normal:** **151.4 s** (**164.5 pt**, 8/8 Lv3, goal True, 0 aborts).
+  - **Hard:** **171.5 s** (**185.7 pt**, 10/10 Lv3, goal True, 0 aborts).
+  - **Very Hard:** **214.9 s** (**192.5 pt**, 12/12 Lv3, goal True, 0 aborts).
+- **Stress & Robustness Audits (Normal seed 1):**
+  - **Slow judge (`--weblag --jlag=0.3,8.0,0.2`):** **155.0 s** (**163.2 pt**, 8/8 Lv3, 0 aborts, worst hold $0.026\text{ m}, 3.1^\circ$) — verified `REPORT_WAIT_S = 15.0` survives >8 s judge latency.
+  - **Judge rejection (`--judge-fail=1` & `--judge-fail=3`):** **153.5 s / 163.7 pt** & **153.6 s / 163.7 pt** (8/8 Lv3, 0 aborts) — verified self-retry in fan mode on rejected CP1 and CP3 reports without handing back.
+  - **Model mismatch (`--mass=1.15 --fanscale=0.85 --navdelay=0.2`):** **219.0 s** (**139.7 pt**, 8/8 Lv3, goal True, 0 aborts, worst hold $0.052\text{ m}, 5.0^\circ$).
+
 ## S6 — v2.5 offline evaluation, 2026-11-25
 
 **Changes in v2.5:**
