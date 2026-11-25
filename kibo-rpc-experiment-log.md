@@ -33,8 +33,25 @@ Measured results from Gazebo and Web simulator runs. These numbers replace the e
 | W11-N | v2.5 | Normal | **8 / 8** | **yes** | 148.5 s (**165.6 pt**) |
 | W11-H | v2.5 | Hard | **10 / 10** | **yes** | 204.2 s (171.5 pt) |
 | W11-V | v2.5 | Very hard | **12 / 12** | **yes** | 223.9 s (188.1 pt) |
+| W12-N | v2.6 | Normal | **8 / 8** | **yes** | 158.2 s (162.0 pt) |
+| W12-H | v2.6 | Hard | **10 / 10** | **yes** | 200.8 s (173.0 pt) |
+| W12-V | v2.6 | Very hard | **12 / 12** | **yes** | 223.7 s (188.1 pt) |
 
 Dashboard "Final Score" values: not yet collected (needed to fit points per level, Pt_goal and the time multiplier).
+
+## W12 — Web simulator, v2.6 on Normal / Hard / Very hard, 2026-11-25 (branch `sim-v1.2`)
+
+**Sixth consecutive perfect web sweep (30/30 Lv3, 3/3 goals, 3-course average 174.38 pt) with 0 hand-backs and 0 fan overload events across all runs.**
+
+| Level | Plan (expected finish / score) | Actual (judge) | Score | Key Observation |
+|---|---|---|---|---|
+| Normal | 158 s / 162.1 | **158.16 s** | **162.01 pt** | Matched planner within 0.2 s; pure fan mode, 8/8 Lv3, max leg error 0.167 m |
+| Hard | 183 s / 180.6 | **200.81 s** | **172.98 pt** | Self-recovery triggered on CP4 leg (`88.4 s`, `0.44 m / 60°`); braked in fan mode, completed CP4 (`0.012 m`) and finished 10/10 Lv3 with 0 hand-backs |
+| Very hard | 208 s / 195.8 | **223.72 s** | **188.14 pt** | 12/12 Lv3, Goal True; pure fan mode across all legs despite 0.288 m pulse on CP1 leg |
+
+- **Rosbag Probe Telemetry (`web_results/...__probe/`):**
+  - **Overload Rule Tripping:** **0 occurrences** across all three runs (`overload_rows = 0`); peak fan duty strictly capped at `0.9750`.
+  - **Controller Integrity:** **0 hand-backs** (`ctl_status.csv` remained `0` throughout every mission until after finish); `/ctl_only` remained silent during all flights.
 
 ## W11 — Web simulator, v2.5 on Normal / Hard / Very hard, 2026-11-25 (branch `sim-v1.2`)
 
