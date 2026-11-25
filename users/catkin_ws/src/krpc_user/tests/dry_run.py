@@ -30,10 +30,16 @@ ARRIVAL_ERR = "--err" in sys.argv
 GOAL_SLOW = 1.0                # --goal-slow=1.15: every leg to the goal takes longer (web W2/W3)
 NO_FAN = "--no-fan" in sys.argv
 TRACE_ARGS = list(sys.argv)
-WEB_GRAVITY = "--gravity" in sys.argv
+WEB_GRAVITY = ("real" if "--gravity" in sys.argv else (True if "--gravity1d" in sys.argv else False))
+                               # --gravity: replay the 15 recorded web gravity series (3 axes, W10);
+                               # --gravity1d: the old single-axis pattern
+CONTACT = "--nocontact" not in sys.argv   # station contact (sim/station.py) is on by default
 GRAVITY_START = next((float(x.split("=")[1]) for x in sys.argv if x.startswith("--gstart=")), None)   # pulse phase override   # ("--nog" = explicit no-op)   # play the web gravity module's pulses (probe 2026-11-24)
 JUDGE_FAIL = set(int(x) for a in sys.argv if a.startswith("--judge-fail=") for x in a.split("=")[1].split(","))
                                # --judge-fail=5,8: the judge rejects the first report of these checkpoints
+CHEAT = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--cheat=")), None)
+                               # --cheat=<cheat_sheet.json>: replay a real (e.g. web) course instead of a generated one
+GRAVITY_SCALE = next((float(x.split("=")[1]) for x in sys.argv if x.startswith("--gscale=")), 1.0)   # stress: pulses x N
 WEBLAG = "--weblag" in sys.argv   # web-like judge timing: hold starts 0.3 s after the report (first report
                                    # +2.7 s, W2/L1), the answer comes 0.2 s after the hold ends
 KPR = "--kpr" in sys.argv      # copy the web's keep_pose_release: 8 ms after our first command
@@ -99,7 +105,9 @@ class World(object):
         self.goal_result = None       # (success, reason) from the v1.2 goal rule
         self.aborts = 0
         # v2.0: physics for /ctl/wrench flight, JAXA controller state, async judge
-        self.phys = IB2Sim(seed=seed, dist_force=DIST_F, web_gravity=WEB_GRAVITY, gravity_start=GRAVITY_START)
+        self.phys = IB2Sim(seed=seed, dist_force=DIST_F, web_gravity=WEB_GRAVITY, gravity_start=GRAVITY_START,
+                           station=_station() if CONTACT else None)
+        self.phys.gravity_scale = GRAVITY_SCALE
         self.mode = "kin"             # "kin": JAXA controller moves/holds the robot; "wrench": our pushes
         self.ctl_type = 10            # KEEP_POSE until told otherwise
         self.kpr_at = None
@@ -349,6 +357,15 @@ def slerp(a, b, f):
 
 
 WORLD = None
+_STATION = []
+
+
+def _station():
+    if not _STATION:
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "sim"))
+        import station
+        _STATION.append(station.Station())
+    return _STATION[0]
 
 
 # ---------------------------------------------------------------------------
@@ -587,6 +604,11 @@ def run(repo, level, seed, judge_delay=0.0, abort_plan=None, slow_plan=None):
     sys.argv = [sys.argv[0], repo]
     import test_offline as T
     _, payload = T.make_course(level, seed)
+    if CHEAT:
+        with open(CHEAT) as fh:
+            cs = json.load(fh)
+        payload = {"checkpoint_count": len(cs["Checkpoints"]), "checkpoints": cs["Checkpoints"],
+                   "goalpoint_id": cs["goalpoint_id"]}
     WORLD = World(payload, seed)
     WORLD.judge_connect_at = 1.0 + judge_delay   # the start signal arrives at t = 1 s
     WORLD.abort_plan = dict(abort_plan or {})
@@ -637,6 +659,11 @@ if __name__ == "__main__":
     print("RESULT level=%s seed=%d duration=%s levels=%s goal=%s aborts=%d score=%s" % (
         level, seed, "%.1f" % dur if dur else None, levels, goal_ok, WORLD.aborts,
         "%.1f" % score if score is not None else None))
+    c = WORLD.phys.contacts if getattr(WORLD, "phys", None) is not None else []
+    if c:
+        hits = [x for i, x in enumerate(c) if i == 0 or x[0] - c[i - 1][0] > 0.5]
+        print("CONTACTS %d hits, deepest %.3f m, fastest %.3f m/s, max spin %.2f rad/s, first at %.1f s" % (
+            len(hits), max(x[1] for x in c), max(x[2] for x in c), max(x[3] for x in c), c[0][0]))
     if WORLD.hold_stats:
         print("HOLDS worst distance %.3f m, worst angle %.1f deg over %d holds" % (
             max(x[0] for x in WORLD.hold_stats), max(x[1] for x in WORLD.hold_stats), len(WORLD.hold_stats)))

@@ -37,12 +37,14 @@ LEG_MAX_PAUSE_S = 40.0      # paused longer than this in one leg -> hand back
 # waits there (keeping its speed) instead of running away. Sideways pushes are fought at full power.
 LEAD_M = 0.10
 BRAKE_MAX_S = 12.0          # before handing back: brake to below BRAKE_SPEED (JAXA's controller
+RECOVER_SPIN = 0.05          # v2.5: rad/s, "not turning any more" before flying a leg again
 BRAKE_SPEED = 0.02          # assumes rest; a moving hand-over overloads the fans)
 REPORT_WAIT_S = 6.0
 STILL_S = 0.3               # safe Lv3 and slow for this long -> report
 SAFE_DIST_M = 0.05          # report margins (Lv3 is 0.10 m, 10 deg)
 SAFE_ANG_DEG = 6.0
 SLOW_MPS = 0.01
+SLOW_RADPS = 0.02           # v2.5: and not turning (about 1 deg/s), or the roll drifts during the judge's hold
 NAV_STALE_S = 0.5
 TRACE = False               # tests only: log the leg state once a second
 FINISH_HOLD_S = 2.0         # keep holding after mission_finished (the judge's 1 s goal hold)
@@ -62,7 +64,12 @@ def t_leg_trace(now, t0):
 
 
 class FanAbort(Exception):
-    """Our controller cannot continue safely; hand back to JAXA's controller."""
+    """Our controller cannot continue safely; hand back to JAXA's controller.
+    v2.5: recoverable=True (pushed off course, hit the station, spun): brake and fly the leg again instead."""
+
+    def __init__(self, msg, recoverable=False):
+        Exception.__init__(self, msg)
+        self.recoverable = recoverable
 
 
 class FanModel(object):
@@ -200,7 +207,7 @@ class FanPilot(object):
         dp = g.distance(nav[0], p)
         da = g.q_angle_deg(nav[2], q)
         if dp > TRACK_POS_FAIL_M or da > TRACK_ATT_FAIL_DEG:
-            raise FanAbort('tracking error %.2f m / %.0f deg' % (dp, da))
+            raise FanAbort('tracking error %.2f m / %.0f deg' % (dp, da), recoverable=True)
         return nav, dp, da
 
     @staticmethod
@@ -208,6 +215,27 @@ class FanPilot(object):
         rp = 1.0 - (dp - PAUSE_FROM_M) / (PAUSE_FULL_M - PAUSE_FROM_M)
         ra = 1.0 - (da - PAUSE_FROM_DEG) / (PAUSE_FULL_DEG - PAUSE_FROM_DEG)
         return max(0.0, min(1.0, rp, ra))
+
+    def brake_to_rest(self, check_abort):
+        """v2.5: stop moving and turning, staying in fan mode (before flying the leg again)."""
+        rate = rospy.Rate(CTL_HZ)
+        t_end = rospy.get_time() + BRAKE_MAX_S
+        still_since = None
+        while rospy.get_time() < t_end and not rospy.is_shutdown():
+            check_abort()
+            now = rospy.get_time()
+            nav = self._nav()
+            F, T, speed = self.ctl.brake(now, nav)
+            self._publish(F, T)
+            self._watch_status(now)
+            if speed < BRAKE_SPEED and g.v_norm(nav[3]) < RECOVER_SPIN:
+                still_since = still_since if still_since is not None else now
+                if now - still_since >= 0.5:
+                    return True
+            else:
+                still_since = None
+            rate.sleep()
+        return False
 
     def brake_and_release(self):
         """v2.1: stop the robot ourselves, then hand JAXA's controller a robot at rest."""
@@ -353,11 +381,12 @@ class FanPilot(object):
             t_leg = now - self.leg_t0
             if report_t is None:
                 if paused > LEG_MAX_PAUSE_S:
-                    raise FanAbort('%s %d: paused %.0f s' % (tag, spec.id, paused))
+                    raise FanAbort('%s %d: paused %.0f s' % (tag, spec.id, paused), recoverable=True)
                 if tau >= self.leg.duration - 0.5 and tau_rot >= self.leg.duration - 0.5:
                     ev = scorer.evaluate(nav[0], nav[2], spec)
                     vb = self.ctl.vel_bias
-                    slow = math.sqrt(sum((nav[1][k] - vb[k]) ** 2 for k in range(3))) < SLOW_MPS
+                    slow = (math.sqrt(sum((nav[1][k] - vb[k]) ** 2 for k in range(3))) < SLOW_MPS
+                            and g.v_norm(nav[3]) < SLOW_RADPS)
                     if self._safe(ev) and slow and self.pending is None:
                         still_since = still_since if still_since is not None else now
                         if now - still_since >= STILL_S:
@@ -376,7 +405,7 @@ class FanPilot(object):
                     else:
                         still_since = None
                 if t_leg > self.leg.duration + paused + gated + LEG_EXTRA_S:
-                    raise FanAbort('%s %d did not settle in time' % (tag, spec.id))
+                    raise FanAbort('%s %d did not settle in time' % (tag, spec.id), recoverable=True)
             else:
                 if self.cpc.wait_for_result(rospy.Duration(0.001)):
                     res = self.cpc.get_result()

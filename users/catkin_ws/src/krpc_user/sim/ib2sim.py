@@ -30,7 +30,7 @@ class IB2Sim(object):
     WEB_GAPS = [9.0, 19.0, 23.0, 0.0]          # seconds between the pulses above, as seen in the logs
 
     def __init__(self, seed=0, nav_delay=0.1, dist_force=0.002, dist_torque=0.0002, fan_noise=True,
-                 web_gravity=False, gravity_start=None):
+                 web_gravity=False, gravity_start=None, station=None):
         self.rng = random.Random(seed)
         self.t = 0.0
         self.p = [0.2, 0.0, 0.0]
@@ -58,16 +58,33 @@ class IB2Sim(object):
                 self.gravity.append((t, t + dur, gx))
                 t += dur + (self.WEB_GAPS[k] if k < len(self.WEB_GAPS) else 0.0)
         self.web_gravity = web_gravity
+        self.real_g = None
+        if web_gravity == "real":                # v2.5 sim: the 15 recorded web gravity series, chained
+            import json
+            with open(os.path.join(HERE, "data", "web_gravity.json")) as fh:
+                runs = json.load(fh)
+            self.real_g = [row[1:] for r in runs for row in r["series"]]
+            self.real_off = gravity_start if gravity_start is not None else self.rng.uniform(0.0, len(self.real_g))
+        # station contact (sim/station.py): sphere of radius 0.1 m against the JPM mesh
+        self.station = station
+        self.contacts = []                      # (t, depth m, normal speed m/s, spin after rad/s)
+        self.mu = 0.5
+        self._near = None                       # cached (position, distance, normal) near a wall
+        self._k = 0
 
     def gravity_push(self, t):
         """World (ISS) force from the web gravity module at time t."""
         if not self.web_gravity:
             return [0.0, 0.0, 0.0]
+        sc = getattr(self, 'gravity_scale', 1.0)
+        if self.real_g is not None:
+            gx, gy, gz = self.real_g[int(t + self.real_off) % len(self.real_g)]
+            return [-gy * MASS * sc, -gx * MASS * sc, -gz * MASS * sc]     # Gazebo (x, y, z) -> ours (-y, -x, -z)
         gx = 0.0022
         for a, b, v in self.gravity:
             if a <= t < b:
                 gx = v
-        return [0.0, -gx * MASS, 0.0]
+        return [0.0, -gx * MASS * getattr(self, 'gravity_scale', 1.0), 0.0]
 
     def command(self, F_body, T_body):
         f = fans.allocate(F_body, T_body)
@@ -96,10 +113,52 @@ class IB2Sim(object):
             if wn > 1e-12:
                 dq = g.q_from_axis_angle(self.w, wn * self.DT)
                 self.q = g.q_normalize(g.q_mul(self.q, dq))
+            self._k += 1
+            if self.station is not None and self._k % 5 == 0:
+                self._contact()
             self.t += self.DT
             self.hist.append((self.t, list(self.p), list(self.v), list(self.q), list(self.w)))
             while self.hist and self.hist[0][0] < self.t - self.nav_delay - 0.05:
                 self.hist.popleft()
+
+    def _contact(self):
+        """Simple contact with the station: no penetration, inelastic normal, Coulomb friction (spins the ball)."""
+        import numpy as np
+        st = self.station
+        if st.coarse(self.p) > 0.1 + 0.08:
+            self._near = None
+            return
+        c = self._near
+        if c is None or g.distance(c[0], self.p) > 0.004:
+            d, n = st.exact(self.p)
+            c = self._near = (list(self.p), d, [float(x) for x in n])
+        d = c[1] + g.v_dot(g.v_sub(self.p, c[0]), c[2])                   # first-order update
+        depth = 0.1 - d
+        if depth <= 0.0:
+            return
+        n = c[2]
+        self.p = [self.p[i] + depth * n[i] for i in range(3)]                   # push out
+        vn = g.v_dot(self.v, n)
+        if vn >= 0.0:
+            return
+        Jn = -MASS * vn                                                         # stop the motion into the wall
+        self.v = [self.v[i] - vn * n[i] for i in range(3)]
+        r_w = [-0.1 * x for x in n]                                             # contact point, world
+        w_w = g.q_rotate(self.q, self.w)
+        vc = g.v_add(self.v, g.v_cross(w_w, r_w))
+        vt = g.v_sub(vc, g.v_scale(n, g.v_dot(vc, n)))
+        vts = g.v_norm(vt)
+        if vts > 1e-6:
+            # impulse that would stop the slip (sphere: effective mass m/(1 + m r^2 / I) along the slip)
+            I = sum(INERTIA) / 3.0
+            m_eff = MASS / (1.0 + MASS * 0.01 / I)
+            Jt_mag = min(self.mu * Jn, m_eff * vts)
+            Jt = g.v_scale(vt, -Jt_mag / vts)
+            self.v = [self.v[i] + Jt[i] / MASS for i in range(3)]
+            dL_w = g.v_cross(r_w, Jt)
+            dL_b = g.q_rotate(g.q_conj(self.q), dL_w)
+            self.w = [self.w[i] + dL_b[i] / INERTIA[i] for i in range(3)]
+        self.contacts.append((self.t, depth, -vn, g.v_norm(self.w)))
 
     def nav(self):
         """What /sensor_fusion/navigation reports now: the state nav_delay ago, with bias and noise."""

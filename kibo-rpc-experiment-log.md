@@ -103,6 +103,29 @@ Dashboard "Final Score" values: not yet collected (needed to fit points per leve
 - The offline simulator predicted this size of loss (with pulses: Normal 193 s vs 173 s without), so further speed work can be done offline.
 - Next lever: faster, still stable recovery after a pulse. Worth about 0.5 pt per second saved; Normal lost ≈ 13 pt here.
 
+## S6 — v2.5 offline evaluation, 2026-11-25
+
+**Changes in v2.5:**
+- **Self-Recovery in Fan Mode (`FanAbort(..., recoverable=True)`, `MAX_RECOVERIES = 3`):**
+  - Motivation: On W10 Normal ($t = 149\text{ s}$), the robot clipped/grazed an obstacle, spun $60^\circ$, tripped `TRACK_ATT_FAIL_DEG`, and handed back permanently to JAXA's slower controller.
+  - In `fanmode.py` & `user_template.py`, recoverable trajectory/settle faults (`tracking error`, `paused > LEG_MAX_PAUSE_S`, `did not settle in time`) now invoke `brake_to_rest()` (braking both linear velocity $< 0.02\text{ m/s}$ and angular spin `< RECOVER_SPIN = 0.05 rad/s` for $0.5\text{ s}$) while staying in fan mode, and then re-plan and re-fly the leg ourselves (up to `MAX_RECOVERIES = 3` times per mission).
+  - Non-recoverable failures (controller wake-up, stale nav) or exhausted recoveries still fall back gracefully to JAXA's controller via `brake_and_release()`.
+- **Angular Rate Hold Guard (`SLOW_RADPS = 0.02 rad/s`):**
+  - `fanmode.py` now checks both linear speed ($< 0.01\text{ m/s}$) and angular velocity ($< 0.02\text{ rad/s} \approx 1.1^\circ/\text{s}$) for `STILL_S = 0.3 s` before submitting a checkpoint report, preventing residual roll drift during the judge's 1 s hold window.
+- **Upgraded Offline Simulator (`sim/station.py`, `sim/data/web_gravity.json`):**
+  - Replays the 15 recorded 3-axis web gravity disturbance series (`--gravity`) and optionally simulates JPM wall contact/spin physics (`--cheat=` supported for real web course replays).
+
+**Offline results (IB2Sim with recorded 3-axis web gravity `--gravity` & KPR enabled, `--nocontact`):**
+- **Multi-seed batch (12 runs: seeds 1, 101–111):** 120/120 Lv3 (100%), 12/12 goals, 0 aborts.
+  - **Normal (4 runs):** mean **166.3 s** / **159.1 pt** (Seed 1: **151.4 s**, **164.5 pt**).
+  - **Hard (4 runs):** mean **180.3 s** / **181.9 pt** (Seed 1: **171.5 s**, **185.7 pt**).
+  - **Very Hard (4 runs):** mean **226.0 s** / **187.0 pt** (Seed 1: **214.9 s**, **192.5 pt**).
+- **Real W10 web course replays (`--cheat=`):**
+  - **W10-Normal:** **157.3 s** (**162.3 pt**, 8/8 Lv3, goal True, worst hold $0.026\text{ m}, 1.6^\circ$).
+  - **W10-Hard:** **171.0 s** (**185.9 pt**, 10/10 Lv3, goal True, worst hold $0.018\text{ m}, 2.1^\circ$).
+  - **W10-VeryHard:** **197.6 s** (**201.2 pt**, 12/12 Lv3, goal True, worst hold $0.049\text{ m}, 4.5^\circ$).
+- **Stress & fallback checks:** 6x gravity stress (`--gscale=6.0`) confirmed recoverable abort + `brake_to_rest` retry and clean hand-back on failure; `--no-fan` fallback passed 8/8 Lv3 (269.8 s).
+
 ## S5 — v2.4 offline evaluation, 2026-11-24
 
 **Changes in v2.4:**

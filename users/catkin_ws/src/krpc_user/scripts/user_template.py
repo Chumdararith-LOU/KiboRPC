@@ -34,7 +34,7 @@ import planner  # noqa: E402
 import startup_probe  # noqa: E402
 import scorer  # noqa: E402
 
-VERSION = "v2.4 2026-11-24"
+VERSION = "v2.5 2026-11-25"
 
 # ---------------------------------------------------------------------------
 # Tuning (seconds are ROS/sim time). Measured values: experiment log, E1 + E2 (v1 Normal run).
@@ -73,6 +73,7 @@ NO_JUDGE_WAIT_S = 5.0       # if no judge is visible at all, do not stall the ru
 # v2.0: fly with our own controller (fanmode.py / fanctl.py) through /ctl/wrench; JAXA's
 # controller (/ctl/command) stays as the fallback if anything looks wrong.
 FAN_MODE = True
+MAX_RECOVERIES = 3          # v2.5: per mission, brake-and-fly-again after being knocked off course
 FAN_PAD = 1.05              # planner padding for our controller's leg times (offline sim: real/plan 0.96)
 FAN_GOAL_FACTOR = 1.0
 FAN_MODEL = fanmode.FanModel()
@@ -119,6 +120,7 @@ class UserTemplate:
         self.__stop_requested = False
         self.__t0 = None
         self.__finished_sent = False
+        self.__recoveries = 0
         self.__goal_spec = None
         self.__hard_stop = HARD_STOP_S
         self.__mission_started = False
@@ -572,7 +574,7 @@ class UserTemplate:
 
     def __visit_any(self, spec, fan, is_goal):
         """v2.0: our controller when it is in charge; on any trouble hand back to JAXA's."""
-        if fan:
+        while fan:
             try:
                 level, _msg = self.__fan.visit(spec, self.__check_abort, self.__elapsed,
                                                'goal' if is_goal else 'checkpoint')
@@ -581,8 +583,21 @@ class UserTemplate:
                 rospy.logwarn('[%6.1f s] cp %d not accepted in fan mode; retrying with JAXA\'s controller',
                               self.__elapsed(), spec.id)
             except fanmode.FanAbort as exc:
+                if exc.recoverable and self.__recoveries < MAX_RECOVERIES:
+                    # v2.5: pushed off course / hit the station / spun: stop, then fly this leg again ourselves
+                    self.__recoveries += 1
+                    rospy.logwarn('[%6.1f s] fan mode: %s; braking and flying the leg again (recovery %d of %d)',
+                                  self.__elapsed(), exc, self.__recoveries, MAX_RECOVERIES)
+                    try:
+                        if self.__fan.brake_to_rest(self.__check_abort):
+                            continue
+                        rospy.logwarn('[%6.1f s] fan mode: could not stop', self.__elapsed())
+                    except fanmode.FanAbort as exc2:
+                        rospy.logwarn('[%6.1f s] fan mode: %s while braking', self.__elapsed(), exc2)
                 rospy.logwarn('[%6.1f s] fan mode stopped: %s; handing back to JAXA\'s controller',
                               self.__elapsed(), exc)
+            break
+        if fan:
             self.__fan.brake_and_release()       # v2.1: hand JAXA's controller a robot at rest
             rospy.sleep(0.5)
             fan = False
