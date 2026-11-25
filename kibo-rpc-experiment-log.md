@@ -30,8 +30,27 @@ Measured results from Gazebo and Web simulator runs. These numbers replace the e
 | W10-N | v2.4 | Normal | **8 / 8** | **yes** | 170.8 s (**157.4 pt**) |
 | W10-H | v2.4 | Hard | **10 / 10** | **yes** | 191.8 s (176.9 pt) |
 | W10-V | v2.4 | Very hard | **12 / 12** | **yes** | 204.5 s (**197.7 pt**) |
+| W11-N | v2.5 | Normal | **8 / 8** | **yes** | 148.5 s (**165.6 pt**) |
+| W11-H | v2.5 | Hard | **10 / 10** | **yes** | 204.2 s (171.5 pt) |
+| W11-V | v2.5 | Very hard | **12 / 12** | **yes** | 223.9 s (188.1 pt) |
 
 Dashboard "Final Score" values: not yet collected (needed to fit points per level, Pt_goal and the time multiplier).
+
+## W11 — Web simulator, v2.5 on Normal / Hard / Very hard, 2026-11-25 (branch `sim-v1.2`)
+
+**Fifth consecutive perfect web sweep (30/30 Lv3, 3/3 goals, 3-course average 175.04 pt) with a new all-time Normal record (148.49 s / 165.55 pt), 0 hand-backs, 0 fan saturations, and live proof of fan-mode self-recovery.**
+
+| Level | Plan (expected finish / score) | Actual (judge) | Score | Key Observation |
+|---|---|---|---|---|
+| Normal | 157 s / 162.5 | **148.49 s** | **165.55 pt** | **New all-time Normal record!** −22.33 s vs v2.4 (170.8 s) and 8.5 s ahead of plan; pure fan mode throughout |
+| Hard | 183 s / 180.7 | **204.20 s** | **171.51 pt** | **Self-recovery validated live!** Tripped 0.53 m / 60° error on goal leg at 191.0 s, braked to rest in 1.9 s, re-flew 0.50 m leg in fan mode, and nailed Goal 12 at 2 mm / Lv3 |
+| Very hard | 206 s / 197.2 | **223.90 s** | **188.05 pt** | 12/12 Lv3, Goal True; pure fan mode across all legs |
+
+- **Self-Recovery in Fan Mode (`recoverable=True`, `MAX_RECOVERIES = 3`):**
+  - On Hard goal leg (`191.0 s`), a severe disturbance/contact spiked error to `0.53 m / 60 deg`. Instead of handing back to JAXA's controller permanently, `brake_to_rest()` damped linear velocity and spin within **1.9 s** (`191.0 s → 192.9 s`), re-planned the remaining `0.50 m / 62°` segment, and completed Goal 12 in `10.5 s` at `dist 0.002 m, centering 0.2°, roll 0.5°`.
+- **Rosbag Probe Telemetry (`web_results/...__probe/`):**
+  - **Overload Rule Tripping:** **0 occurrences** across all three runs (`overload_rows = 0`); peak fan duty strictly capped at `0.9750`.
+  - **Controller Integrity:** **0 hand-backs** (`ctl_status.csv` remained `0` throughout every mission until after finish). `/ctl_only` remained silent during all flights.
 
 ## W10 — Web simulator, v2.4 on Normal / Hard / Very hard, 2026-11-24 (branch `sim-v1.2`)
 
